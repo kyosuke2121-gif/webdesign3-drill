@@ -1,0 +1,9 @@
+{
+  "name": "Webデザイン技能検定3級 学習アプリ 100問完全版",
+  "short_name": "Web3学習100",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "ja"
+}
