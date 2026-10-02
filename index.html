@@ -377,7 +377,7 @@
     <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur border-t border-slate-800 pt-2.5 px-2 pb-[calc(0.625rem+var(--safe-bottom))] flex justify-around items-center z-30 shadow-2xl">
         <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center text-blue-400"><span class="text-lg">&#128202;</span><span class="text-[10px] font-bold mt-1">ホーム</span></button>
         <button onclick="switchTab('practice')" id="mobile-nav-practice" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128218;</span><span class="text-[10px] font-bold mt-1">問題集</span></button>
-        <button onclick="switchTab('exam')" id="mobile-nav-exam" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9201;</span><span class="text-[10px] font-bold mt-1">模試</span></button>
+        <button onclick="switchTab('exam')" id="mobile-nav-exam" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9201;</span><span class="text-[10px] font-bold mt-1">模視</span></button>
         <button onclick="switchTab('bookmarks')" id="mobile-nav-bookmarks" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128209;</span><span class="text-[10px] font-bold mt-1">保存</span></button>
         <button onclick="switchTab('flashcards')" id="mobile-nav-flashcards" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128214;</span><span class="text-[10px] font-bold mt-1">単語帳</span></button>
         <button onclick="switchTab('settings')" id="mobile-nav-settings" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9881;</span><span class="text-[10px] font-bold mt-1">設定</span></button>
@@ -906,7 +906,7 @@
             }
             saveUserData();
 
-            document.getElementById('exam-badge').innerText = isPassed ? '?' : '!';
+            document.getElementById('exam-badge').innerText = isPassed ? '○' : '×';
             document.getElementById('exam-status-title').innerText = isPassed ? '合格ライン達成！' : '合格ライン未達';
             document.getElementById('exam-status-subtitle').innerText = isPassed ? '素晴らしい成果です！本試験もこの調子で臨みましょう。' : 'もう一度間違えた部分を復習して再挑戦しましょう。';
             document.getElementById('exam-score-text').innerText = `${correctCount} / ${total}`;
@@ -930,7 +930,7 @@
                     <div class="p-4 border rounded-xl ${isCorrect ? 'border-slate-700 bg-slate-900/60' : 'border-rose-900/50 bg-rose-950/20'} space-y-2">
                         <div class="flex items-center justify-between text-xs">
                             <span class="font-bold text-slate-400">問 ${idx + 1} (${CATEGORIES[q.category]})</span>
-                            <span class="font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '正解 &#10003;' : '不正解 &#10003;'}</span>
+                            <span class="font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '正解 &#10003;' : '不正解 &#10007;'}</span>
                         </div>
                         <p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p>
                         <div class="text-xs space-y-1 text-slate-300">
