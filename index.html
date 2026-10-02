@@ -34,6 +34,46 @@
         .tap-target { min-height: 44px; }
         .question-option { min-height: 58px; }
         .safe-bottom { padding-bottom: calc(5.5rem + var(--safe-bottom)); }
+        /* Mobile bottom navigation height + fixed/sticky content clearance */
+        :root { --mobile-nav-height: 4.75rem; }
+        .mobile-bottom-nav {
+            min-height: var(--mobile-nav-height);
+            padding-bottom: calc(.625rem + var(--safe-bottom));
+        }
+        .mobile-nav-btn {
+            min-width: 44px;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        /* Keep question navigation comfortably above the fixed mobile nav. */
+        .practice-question-nav {
+            position: sticky;
+            bottom: calc(var(--mobile-nav-height) + var(--safe-bottom));
+            z-index: 15;
+            margin-top: .5rem;
+            padding: .75rem 0;
+            background: linear-gradient(to bottom, rgba(15,23,42,0), rgba(15,23,42,.97) 30%);
+        }
+        /* Horizontal swipe is handled by JS; vertical page scrolling remains natural. */
+        .flashcard-swipe {
+            touch-action: pan-y;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        @media (max-width: 767px) {
+            .practice-question-nav {
+                bottom: calc(var(--mobile-nav-height) + var(--safe-bottom) - .15rem);
+                padding-bottom: .5rem;
+            }
+            #practice-next-btn, #practice-prev-btn {
+                min-height: 50px;
+            }
+            #flashcard-container {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }
+        }
         @media (max-width: 767px) {
             .question-option { min-height: 62px; font-size: .95rem; }
             #practice-question-text, #exam-question-text { font-size: 1.08rem; line-height: 1.8; }
@@ -201,7 +241,7 @@
                 <div id="practice-options" class="space-y-3"></div>
                 <div id="practice-explanation" class="hidden rounded-xl p-5 border transition-all"></div>
 
-                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-700/80">
+                <div class="practice-question-nav grid grid-cols-2 gap-3 pt-4 border-t border-slate-700/80">
                     <button id="practice-prev-btn" onclick="prevPracticeQuestion()" class="tap-target w-full px-3 py-3 border border-slate-700 text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-700/50 transition flex items-center justify-center gap-1">
                         &#9664; 前の問題
                     </button>
@@ -331,7 +371,7 @@
             </div>
 
             <div id="flashcard-container" class="max-w-md mx-auto perspective-1000 my-8">
-                <div id="flashcard" onclick="flipCard()" class="w-full h-80 rounded-2xl cursor-pointer relative transform-style-3d transition-transform duration-500 shadow-2xl border border-slate-700 bg-slate-800">
+                <div id="flashcard" onclick="handleFlashcardClick(event)" class="flashcard-swipe w-full h-80 rounded-2xl cursor-pointer relative transform-style-3d transition-transform duration-500 shadow-2xl border border-slate-700 bg-slate-800">
                     <div class="absolute inset-0 backface-hidden p-8 flex flex-col justify-between items-center text-center">
                         <span id="card-tag" class="px-3 py-1 bg-slate-700/60 text-slate-300 border border-slate-600 rounded-full text-xs font-bold">カテゴリ</span>
                         <div class="space-y-2">
@@ -374,7 +414,7 @@
     </main>
 
     <!-- モバイルボトムナビゲーション -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur border-t border-slate-800 pt-2.5 px-2 pb-[calc(0.625rem+var(--safe-bottom))] flex justify-around items-center z-30 shadow-2xl">
+    <div class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur border-t border-slate-800 pt-2.5 px-2 flex justify-around items-center z-30 shadow-2xl">
         <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center text-blue-400"><span class="text-lg">&#128202;</span><span class="text-[10px] font-bold mt-1">ホーム</span></button>
         <button onclick="switchTab('practice')" id="mobile-nav-practice" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128218;</span><span class="text-[10px] font-bold mt-1">問題集</span></button>
         <button onclick="switchTab('exam')" id="mobile-nav-exam" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9201;</span><span class="text-[10px] font-bold mt-1">模視</span></button>
@@ -1010,7 +1050,7 @@
             // 単語カード表示用の標準HTMLを差し込み（全完了後に再初期化された場合のため）
             if (!document.getElementById('flashcard')) {
                 container.innerHTML = `
-                    <div id="flashcard" onclick="flipCard()" class="w-full h-80 rounded-2xl cursor-pointer relative transform-style-3d transition-transform duration-500 shadow-2xl border border-slate-700 bg-slate-800">
+                    <div id="flashcard" onclick="handleFlashcardClick(event)" class="flashcard-swipe w-full h-80 rounded-2xl cursor-pointer relative transform-style-3d transition-transform duration-500 shadow-2xl border border-slate-700 bg-slate-800">
                         <div class="absolute inset-0 backface-hidden p-8 flex flex-col justify-between items-center text-center">
                             <span id="card-tag" class="px-3 py-1 bg-slate-700/60 text-slate-300 border border-slate-600 rounded-full text-xs font-bold">カテゴリ</span>
                             <div class="space-y-2">
@@ -1025,14 +1065,80 @@
                             <p class="text-xs text-slate-400">タップで戻る</p>
                         </div>
                     </div>`;
+                setupFlashcardSwipe();
             }
 
+            setupFlashcardSwipe();
             document.getElementById('card-tag').innerText = card.category;
             document.getElementById('card-term').innerText = card.term;
             document.getElementById('card-definition').innerText = card.def;
             document.getElementById('flashcard-counter').innerText = `${state.flashcards.currentIndex + 1} / ${list.length}`;
             state.flashcards.isFlipped = false;
             document.getElementById('flashcard').classList.remove('rotate-y-180');
+        }
+
+        // --- Mobile flashcard swipe ---
+        let flashcardTouchStartX = 0;
+        let flashcardTouchStartY = 0;
+        let flashcardTouchMoved = false;
+        let suppressFlashcardClick = false;
+
+        function handleFlashcardClick(event) {
+            if (suppressFlashcardClick) {
+                suppressFlashcardClick = false;
+                return;
+            }
+            flipCard();
+        }
+
+        function setupFlashcardSwipe() {
+            const cardEl = document.getElementById('flashcard');
+            if (!cardEl || cardEl.dataset.swipeReady === 'true') return;
+
+            cardEl.dataset.swipeReady = 'true';
+
+            cardEl.addEventListener('touchstart', (event) => {
+                if (!event.touches || event.touches.length !== 1) return;
+                flashcardTouchStartX = event.touches[0].clientX;
+                flashcardTouchStartY = event.touches[0].clientY;
+                flashcardTouchMoved = false;
+            }, {passive: true});
+
+            cardEl.addEventListener('touchmove', (event) => {
+                if (!event.touches || event.touches.length !== 1) return;
+
+                const dx = event.touches[0].clientX - flashcardTouchStartX;
+                const dy = event.touches[0].clientY - flashcardTouchStartY;
+
+                // Ignore mostly-vertical movement so the page can scroll normally.
+                if (Math.abs(dy) > Math.abs(dx)) return;
+
+                if (Math.abs(dx) > 12) {
+                    flashcardTouchMoved = true;
+                }
+            }, {passive: true});
+
+            cardEl.addEventListener('touchend', (event) => {
+                const touch = event.changedTouches && event.changedTouches[0];
+                if (!touch) return;
+
+                const dx = touch.clientX - flashcardTouchStartX;
+                const dy = touch.clientY - flashcardTouchStartY;
+
+                if (flashcardTouchMoved && Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                    suppressFlashcardClick = true;
+
+                    if (dx < 0) {
+                        nextCard();
+                    } else {
+                        prevCard();
+                    }
+                }
+
+                flashcardTouchStartX = 0;
+                flashcardTouchStartY = 0;
+                flashcardTouchMoved = false;
+            }, {passive: true});
         }
 
         function flipCard() {
@@ -1114,6 +1220,7 @@
         window.onload = function() {
             loadUserData();
             switchTab('dashboard');
+            setupFlashcardSwipe();
         };
     </script>
 </body>
