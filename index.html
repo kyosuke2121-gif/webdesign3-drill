@@ -100,7 +100,7 @@
                 height: var(--mobile-bottom-bar-height);
                 background-color: rgba(15, 23, 42, 0.95);
                 backdrop-filter: blur(8px);
-                border-top: 1 border-slate-800;
+                border-top: 1px solid #1e293b;
                 z-index: 25;
             }
         }
@@ -988,16 +988,17 @@
             scrollPracticeToTop();
         }
 
-        function selectPracticeAnswer(optionIndex) {
+        function selectPracticeAnswer(idx) {
             if (state.practice.answers[state.practice.currentIndex] !== undefined) return;
 
             const q = state.practice.questions[state.practice.currentIndex];
-            state.practice.answers[state.practice.currentIndex] = optionIndex;
+            state.practice.answers[state.practice.currentIndex] = idx;
 
-            const isCorrect = optionIndex === q.correct;
+            const isCorrect = idx === q.correct;
             state.userData.totalAnswered++;
             if (isCorrect) {
                 state.userData.correctCount++;
+                removeWeakQuestion(q.id);
             } else {
                 addWeakQuestion(q.id);
             }
@@ -1011,11 +1012,12 @@
             saveUserData();
             renderPracticeQuestion();
 
-            const autoNextChecked = document.getElementById('practice-auto-next-toggle')?.checked;
-            if (autoNextChecked) {
+            // 自動で次へ進む処理
+            const autoNext = document.getElementById('practice-auto-next-toggle');
+            if (autoNext && autoNext.checked && state.practice.currentIndex < state.practice.questions.length - 1) {
                 state.practiceAutoNextTimer = setTimeout(() => {
                     nextPracticeQuestion();
-                }, 1800);
+                }, 1500);
             }
         }
 
@@ -1025,7 +1027,7 @@
                 state.practice.currentIndex++;
                 renderPracticeQuestion();
             } else {
-                // 問題集の最後で「最初に戻る」を押した時は新たに1からランダムで問題を出題
+                // 最後の問題の場合は最初から再スタート
                 startPracticeSession();
             }
         }
@@ -1064,25 +1066,24 @@
             state.exam.timeLeft = 2700; // 45分
 
             if (state.exam.timer) clearInterval(state.exam.timer);
-            state.exam.timer = setInterval(updateExamTimer, 1000);
+            state.exam.timer = setInterval(() => {
+                state.exam.timeLeft--;
+                updateExamTimer();
+                if (state.exam.timeLeft <= 0) {
+                    clearInterval(state.exam.timer);
+                    finishExam();
+                }
+            }, 1000);
 
+            updateExamTimer();
             renderExamQuestion();
             renderExamGrid();
         }
 
         function updateExamTimer() {
-            state.exam.timeLeft--;
-            const mins = Math.floor(state.exam.timeLeft / 60);
-            const secs = state.exam.timeLeft % 60;
-            const timerEl = document.getElementById('exam-timer');
-            if (timerEl) {
-                timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }
-
-            if (state.exam.timeLeft <= 0) {
-                clearInterval(state.exam.timer);
-                finishExam();
-            }
+            const min = Math.floor(state.exam.timeLeft / 60);
+            const sec = state.exam.timeLeft % 60;
+            document.getElementById('exam-timer').textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
         }
 
         function renderExamQuestion() {
@@ -1094,40 +1095,47 @@
             document.getElementById('exam-question-text').textContent = q.question;
 
             const optionsContainer = document.getElementById('exam-options');
-            const selectedAns = state.exam.answers[state.exam.currentIndex];
+            const selectedOpt = state.exam.answers[state.exam.currentIndex];
 
             optionsContainer.innerHTML = q.options.map((opt, idx) => {
-                const isSelected = selectedAns === idx;
+                const isSelected = selectedOpt === idx;
+                const btnClass = isSelected
+                    ? "w-full text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-950/60 text-white font-bold flex items-center justify-between"
+                    : "w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 transition flex items-center justify-between";
+
                 return `
-                    <button onclick="selectExamAnswer(${idx})" class="w-full text-left p-4 rounded-xl border ${isSelected ? 'border-blue-500 bg-blue-950/60 text-white font-bold' : 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200'} transition text-sm flex items-center justify-between">
-                        <span>${escapeHTML(opt)}</span>
-                        <span class="w-5 h-5 rounded-full border ${isSelected ? 'border-blue-400 bg-blue-500 text-white' : 'border-slate-600'} flex items-center justify-center text-xs ml-2 flex-shrink-0">${idx + 1}</span>
+                    <button onclick="selectExamAnswer(${idx})" class="${btnClass}">
+                        <span class="pr-2">${escapeHTML(opt)}</span>
+                        <span class="w-5 h-5 rounded-full border border-slate-600 flex items-center justify-center text-xs flex-shrink-0">${isSelected ? '●' : ''}</span>
                     </button>
                 `;
             }).join('');
 
+            document.getElementById('exam-prev-btn').disabled = state.exam.currentIndex === 0;
+            document.getElementById('exam-next-btn').textContent = state.exam.currentIndex === 24 ? '採点へ進む ▶' : '次へ ▶';
+
             const answeredCount = Object.keys(state.exam.answers).length;
             document.getElementById('exam-answered-summary').textContent = `回答済み: ${answeredCount} / 25 問`;
-
-            renderExamGrid();
         }
 
         function selectExamAnswer(optIdx) {
             state.exam.answers[state.exam.currentIndex] = optIdx;
             renderExamQuestion();
+            renderExamGrid();
         }
 
         function navigateExamQuestion(delta) {
-            const newIndex = state.exam.currentIndex + delta;
-            if (newIndex >= 0 && newIndex < 25) {
-                state.exam.currentIndex = newIndex;
+            const nextIdx = state.exam.currentIndex + delta;
+            if (nextIdx >= 0 && nextIdx < 25) {
+                state.exam.currentIndex = nextIdx;
                 renderExamQuestion();
             }
         }
 
         function handleExamNext() {
             if (state.exam.currentIndex < 24) {
-                navigateExamQuestion(1);
+                state.exam.currentIndex++;
+                renderExamQuestion();
             } else {
                 finishExamPrompt();
             }
@@ -1135,34 +1143,31 @@
 
         function renderExamGrid() {
             const grid = document.getElementById('exam-question-grid');
-            if (!grid) return;
-
             grid.innerHTML = state.exam.questions.map((_, idx) => {
-                const isCurrent = idx === state.exam.currentIndex;
                 const isAnswered = state.exam.answers[idx] !== undefined;
+                const isCurrent = state.exam.currentIndex === idx;
+                let bgClass = "bg-slate-900 border-slate-800 text-slate-500";
+                if (isCurrent) bgClass = "bg-blue-600 text-white font-bold border-blue-400";
+                else if (isAnswered) bgClass = "bg-slate-700 text-blue-300 border-slate-600";
 
-                let btnClass = "py-2 rounded-lg text-xs font-bold transition text-center ";
-                if (isCurrent) {
-                    btnClass += "bg-blue-600 text-white ring-2 ring-blue-400";
-                } else if (isAnswered) {
-                    btnClass += "bg-slate-700 text-blue-300 border border-blue-500/50";
-                } else {
-                    btnClass += "bg-slate-900/60 text-slate-500 border border-slate-800";
-                }
-
-                return `<button onclick="jumpToExamQuestion(${idx})" class="${btnClass}">${idx + 1}</button>`;
+                return `
+                    <button onclick="jumpExamQuestion(${idx})" class="p-2 text-center rounded-lg text-xs border ${bgClass} transition">
+                        ${idx + 1}
+                    </button>
+                `;
             }).join('');
         }
 
-        function jumpToExamQuestion(idx) {
+        function jumpExamQuestion(idx) {
             state.exam.currentIndex = idx;
             renderExamQuestion();
+            renderExamGrid();
         }
 
         function finishExamPrompt() {
             const answeredCount = Object.keys(state.exam.answers).length;
             if (answeredCount < 25) {
-                if (!confirm(`未回答の問題が ${25 - answeredCount} 問あります。採点を実行しますか？`)) {
+                if (!confirm(`まだ未回答の問題が ${25 - answeredCount} 問あります。採点を実行しますか？`)) {
                     return;
                 }
             }
@@ -1172,73 +1177,88 @@
         function finishExam() {
             if (state.exam.timer) clearInterval(state.exam.timer);
 
-            let score = 0;
-            const categoryResults = {};
+            let correctCount = 0;
+            const categoryStats = {};
 
             state.exam.questions.forEach((q, idx) => {
                 const userAns = state.exam.answers[idx];
                 const isCorrect = userAns === q.correct;
+                if (isCorrect) correctCount++;
 
-                if (isCorrect) score++;
-                else if (userAns !== undefined) addWeakQuestion(q.id);
-
-                if (!categoryResults[q.category]) {
-                    categoryResults[q.category] = { total: 0, correct: 0 };
+                if (!categoryStats[q.category]) {
+                    categoryStats[q.category] = { total: 0, correct: 0 };
                 }
-                categoryResults[q.category].total++;
-                if (isCorrect) categoryResults[q.category].correct++;
+                categoryStats[q.category].total++;
+                if (isCorrect) categoryStats[q.category].correct++;
+
+                // 弱点ノートの同期
+                if (userAns !== undefined) {
+                    if (isCorrect) removeWeakQuestion(q.id);
+                    else addWeakQuestion(q.id);
+                }
             });
 
-            const pass = score >= 18; // 70%以上
-            const scorePercent = Math.round((score / 25) * 100);
+            const scorePercent = Math.round((correctCount / 25) * 100);
+            const isPassed = scorePercent >= 70;
 
             if (state.userData.examHighScore === null || scorePercent > state.userData.examHighScore) {
                 state.userData.examHighScore = scorePercent;
             }
+
+            state.userData.examHistory.push({
+                date: new Date().toLocaleDateString(),
+                score: scorePercent,
+                correctCount: correctCount
+            });
             saveUserData();
 
+            // UIの切り替え
             document.getElementById('exam-active').classList.add('hidden');
             document.getElementById('exam-result').classList.remove('hidden');
 
-            document.getElementById('exam-badge').textContent = pass ? '🎉' : '⚠️';
-            document.getElementById('exam-status-title').textContent = pass ? '合格基準達成！' : '不合格';
-            document.getElementById('exam-status-title').className = `text-2xl font-black ${pass ? 'text-emerald-400' : 'text-rose-400'}`;
-            document.getElementById('exam-status-subtitle').textContent = pass ? 'おめでとうございます！本番でも力を発揮できます。' : '70%（18問以上）の正解で合格となります。復習して再挑戦しましょう。';
+            document.getElementById('exam-badge').textContent = isPassed ? '🎉' : '⚠️';
+            document.getElementById('exam-status-title').textContent = isPassed ? '合格ライン達成！' : '不合格（70%未満）';
+            document.getElementById('exam-status-subtitle').textContent = isPassed 
+                ? '素晴らしい成果です！本番試験でも落ち着いて臨みましょう。' 
+                : '弱点分野を中心に復習し、再挑戦してみましょう！';
 
-            document.getElementById('exam-score-text').textContent = `${score} / 25`;
+            document.getElementById('exam-score-text').textContent = `${correctCount} / 25`;
             document.getElementById('exam-accuracy-text').textContent = `${scorePercent}%`;
 
-            const catContainer = document.getElementById('exam-category-result');
-            catContainer.innerHTML = Object.entries(categoryResults).map(([catKey, res]) => {
-                const catAcc = Math.round((res.correct / res.total) * 100);
-                return `
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-300 font-semibold">${escapeHTML(CATEGORIES[catKey] || catKey)}</span>
-                            <span class="font-bold text-slate-200">${res.correct} / ${res.total} (${catAcc}%)</span>
+            const catResultContainer = document.getElementById('exam-category-result');
+            catResultContainer.innerHTML = '<h4 class="font-bold text-xs text-slate-300 mb-2">分野別得点状況</h4>' + 
+                Object.entries(categoryStats).map(([catKey, stat]) => {
+                    const acc = Math.round((stat.correct / stat.total) * 100);
+                    return `
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">${escapeHTML(CATEGORIES[catKey])}</span>
+                                <span class="font-bold text-slate-200">${stat.correct} / ${stat.total} (${acc}%)</span>
+                            </div>
+                            <div class="mini-bar"><div class="progress-fill bg-blue-500" style="width:${acc}%"></div></div>
                         </div>
-                        <div class="mini-bar"><div class="progress-fill ${catAcc >= 70 ? 'bg-emerald-500' : 'bg-rose-500'}" style="width:${catAcc}%"></div></div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
 
+            // 全問レビューの生成
             const reviewList = document.getElementById('exam-review-list');
             reviewList.innerHTML = state.exam.questions.map((q, idx) => {
                 const userAns = state.exam.answers[idx];
                 const isCorrect = userAns === q.correct;
+                const isUnanswered = userAns === undefined;
 
                 return `
-                    <div class="p-4 bg-slate-900/60 rounded-xl border ${isCorrect ? 'border-emerald-900/50' : 'border-rose-900/50'} space-y-2">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">問 ${idx + 1}: ${isCorrect ? '⭕ 正解' : '❌ 不正解'}</span>
-                            <span class="text-slate-400">${escapeHTML(CATEGORIES[q.category])}</span>
+                    <div class="p-4 rounded-xl border ${isCorrect ? 'border-emerald-800/50 bg-emerald-950/20' : 'border-rose-800/50 bg-rose-950/20'} space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold">
+                            <span class="text-slate-400">問題 ${idx + 1} [${CATEGORIES[q.category]}]</span>
+                            <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '⭕ 正解' : isUnanswered ? '⚪ 未回答' : '❌ 不正解'}</span>
                         </div>
-                        <p class="font-bold text-sm text-slate-200">${escapeHTML(q.question)}</p>
-                        <div class="text-xs space-y-1 pt-1 text-slate-300">
-                            <div>あなたの回答: <span class="font-semibold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${userAns !== undefined ? escapeHTML(q.options[userAns]) : '未回答'}</span></div>
-                            <div>正解: <span class="font-semibold text-emerald-400">${escapeHTML(q.options[q.correct])}</span></div>
+                        <p class="font-bold text-sm text-slate-100">${escapeHTML(q.question)}</p>
+                        <div class="text-xs space-y-1 pt-2 border-t border-slate-700/50">
+                            <div class="text-slate-300">あなたの回答: <span class="font-bold">${isUnanswered ? 'なし' : escapeHTML(q.options[userAns])}</span></div>
+                            <div class="text-emerald-400 font-bold">模範解答: ${escapeHTML(q.options[q.correct])}</div>
+                            <p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p>
                         </div>
-                        <p class="text-xs text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800 mt-2">${escapeHTML(q.explanation)}</p>
                     </div>
                 `;
             }).join('');
@@ -1247,16 +1267,15 @@
         // --- BOOKMARKS LOGIC ---
         function renderBookmarks() {
             const container = document.getElementById('bookmarks-list-container');
-            const badge = document.getElementById('bookmark-badge-count');
-            if (!container) return;
-
+            const countBadge = document.getElementById('bookmark-badge-count');
             const bookmarkedQuestions = QUESTIONS.filter(q => state.userData.bookmarks.includes(q.id));
-            if (badge) badge.textContent = `${bookmarkedQuestions.length} 件`;
+
+            if (countBadge) countBadge.textContent = `${bookmarkedQuestions.length} 件`;
 
             if (bookmarkedQuestions.length === 0) {
                 container.innerHTML = `
                     <div class="p-8 text-center bg-slate-800/50 rounded-2xl border border-slate-700 text-slate-500 text-sm">
-                        ブックマークされた問題はありません。<br>問題演習中に「🔖 ブックマーク保存」を押すとここに一覧表示されます。
+                        保存されたブックマークはありません。<br>演習画面の「🔖 ブックマーク保存」を押すことでリストに追加できます。
                     </div>
                 `;
                 return;
@@ -1264,14 +1283,14 @@
 
             container.innerHTML = bookmarkedQuestions.map(q => `
                 <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="px-2.5 py-1 bg-purple-950 text-purple-300 border border-purple-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category] || q.category)}</span>
+                    <div class="flex justify-between items-center">
+                        <span class="px-2.5 py-1 bg-purple-950 text-purple-300 border border-purple-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category])}</span>
                         <button onclick="removeBookmark(${q.id})" class="text-xs text-slate-500 hover:text-rose-400 transition">削除</button>
                     </div>
                     <p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p>
                     <div class="text-xs bg-slate-900/80 p-3 rounded-xl space-y-1">
                         <div class="text-emerald-300 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div>
-                        <p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p>
+                        <p class="text-slate-400">${escapeHTML(q.explanation)}</p>
                     </div>
                 </div>
             `).join('');
@@ -1285,49 +1304,41 @@
 
         // --- FLASHCARDS LOGIC ---
         function initFlashcards() {
-            state.flashcards.activeList = FLASHCARDS.filter(c => !state.userData.masteredCards.includes(c.id));
+            state.flashcards.activeList = FLASHCARDS.filter(card => !state.userData.masteredCards.includes(card.id));
             state.flashcards.currentIndex = 0;
             state.flashcards.isFlipped = false;
             renderFlashcard();
         }
 
         function renderFlashcard() {
-            const list = state.flashcards.activeList;
             const cardEl = document.getElementById('flashcard');
-            const counterEl = document.getElementById('flashcard-counter');
-
-            if (!list || list.length === 0) {
-                if (counterEl) counterEl.textContent = '完了！';
-                if (cardEl) {
-                    cardEl.innerHTML = `
-                        <div class="p-8 text-center flex flex-col items-center justify-center h-full space-y-3">
-                            <span class="text-4xl">🎉</span>
-                            <h3 class="font-bold text-lg text-white">すべての単語を暗記しました！</h3>
-                            <button onclick="resetMasteredCards()" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs">単語帳をリセット</button>
-                        </div>
-                    `;
-                }
+            const counter = document.getElementById('flashcard-counter');
+            
+            if (state.flashcards.activeList.length === 0) {
+                document.getElementById('card-term').textContent = "すべての用語を暗記しました！";
+                document.getElementById('card-definition').textContent = "おめでとうございます！リセットボタンから再挑戦できます。";
+                document.getElementById('card-tag').textContent = "完了";
+                if (counter) counter.textContent = "0 / 0";
                 return;
             }
 
-            const card = list[state.flashcards.currentIndex];
-            if (counterEl) counterEl.textContent = `${state.flashcards.currentIndex + 1} / ${list.length}`;
+            const current = state.flashcards.activeList[state.flashcards.currentIndex];
+            if (!current) return;
 
-            document.getElementById('card-tag').textContent = card.category;
-            document.getElementById('card-term').textContent = card.term;
-            document.getElementById('card-definition').textContent = card.def;
+            // 回転状態の復元
+            if (state.flashcards.isFlipped) cardEl.classList.add('rotate-y-180');
+            else cardEl.classList.remove('rotate-y-180');
 
-            if (state.flashcards.isFlipped) {
-                cardEl.classList.add('rotate-y-180');
-            } else {
-                cardEl.classList.remove('rotate-y-180');
-            }
+            document.getElementById('card-tag').textContent = current.category;
+            document.getElementById('card-term').textContent = current.term;
+            document.getElementById('card-definition').textContent = current.def;
+
+            if (counter) counter.textContent = `${state.flashcards.currentIndex + 1} / ${state.flashcards.activeList.length}`;
         }
 
         function handleFlashcardClick(e) {
             state.flashcards.isFlipped = !state.flashcards.isFlipped;
-            const cardEl = document.getElementById('flashcard');
-            if (cardEl) cardEl.classList.toggle('rotate-y-180');
+            document.getElementById('flashcard').classList.toggle('rotate-y-180', state.flashcards.isFlipped);
         }
 
         function nextCard() {
@@ -1345,32 +1356,34 @@
         }
 
         function toggleCardMastered() {
-            const list = state.flashcards.activeList;
-            if (!list || list.length === 0) return;
+            const current = state.flashcards.activeList[state.flashcards.currentIndex];
+            if (!current) return;
 
-            const card = list[state.flashcards.currentIndex];
-            if (!state.userData.masteredCards.includes(card.id)) {
-                state.userData.masteredCards.push(card.id);
+            if (!state.userData.masteredCards.includes(current.id)) {
+                state.userData.masteredCards.push(current.id);
                 saveUserData();
             }
             initFlashcards();
         }
 
         function resetMasteredCards() {
-            state.userData.masteredCards = [];
-            saveUserData();
-            initFlashcards();
+            if (confirm('暗記済みデータをリセットしますか？')) {
+                state.userData.masteredCards = [];
+                saveUserData();
+                initFlashcards();
+            }
         }
 
         // --- SETTINGS LOGIC ---
         function exportUserData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.userData));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `web3_exam_backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            const jsonStr = JSON.stringify(state.userData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `web3_study_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function importUserData(e) {
@@ -1383,17 +1396,17 @@
                     const parsed = JSON.parse(evt.target.result);
                     state.userData = { ...state.userData, ...parsed };
                     saveUserData();
-                    alert('データを復元しました。');
+                    alert('データを正常に復元しました。');
                     location.reload();
                 } catch(err) {
-                    alert('ファイルの読み込みに失敗しました。無効なデータです。');
+                    alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');
                 }
             };
             reader.readAsText(file);
         }
 
         function resetUserData() {
-            if (confirm('すべての学習進捗・ブックマーク・苦手問題データが消去されます。本当によろしいですか？')) {
+            if (confirm('すべての学習履歴、ブックマーク、苦手データを消旧しますか？この操作は取り消せません。')) {
                 localStorage.removeItem('web3_master_data');
                 location.reload();
             }
@@ -1402,7 +1415,7 @@
         // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
             loadUserData();
-            startPracticeSession();
+            switchTab('dashboard');
         });
     </script>
 </body>
