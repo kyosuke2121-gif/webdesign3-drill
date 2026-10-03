@@ -99,6 +99,80 @@
     </style>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0f172a">
+
+<style id="mobile-practice-focus-style">
+@media (max-width: 767px) {
+  html, body { height: 100%; overflow-x: hidden; }
+  body { overscroll-behavior-x: none; }
+
+  /* Practice mode on phones is a self-contained viewport. */
+  #tab-practice {
+    height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    min-height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+
+  #tab-practice > .max-w-4xl {
+    height: 100%;
+    max-width: none;
+    padding: .4rem .7rem .25rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #tab-practice .practice-top-controls { flex: 0 0 auto; }
+  #tab-practice .practice-top-controls select { min-height: 38px; }
+
+  #practice-question-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-top: .35rem;
+  }
+
+  /* Question and choices are the main touch area. */
+  #practice-question-container .question-text,
+  #practice-question-container [data-question-text] {
+    max-height: 30vh;
+    overflow-y: auto;
+  }
+
+  #practice-question-container .question-options {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #practice-question-container .question-option {
+    min-height: 0 !important;
+    padding: .65rem .7rem !important;
+  }
+
+  /* Navigation stays inside the visible practice screen. */
+  #practice-question-nav,
+  .practice-question-nav {
+    position: static !important;
+    flex: 0 0 auto;
+    bottom: auto !important;
+    margin-top: .3rem !important;
+    padding: .25rem 0 calc(.15rem + var(--safe-bottom)) !important;
+    background: none !important;
+    z-index: 20;
+  }
+
+  #practice-prev-btn,
+  #practice-next-btn {
+    min-height: 48px !important;
+    height: 48px;
+  }
+}
+</style>
+
 </head>
 <body class="min-h-screen flex flex-col md:flex-row bg-slate-900 text-slate-100">
 
@@ -683,7 +757,7 @@
         function startWeakPractice(){
             clearPracticeAutoNextTimer();const pool=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id)).sort(()=>Math.random()-.5);
             if(!pool.length){alert('現在、苦手問題はありません。まず問題集で間違えた問題を作ってください。');return}
-            state.practice.mode='weak';state.practice.currentCategory='WEAK';state.practice.questions=pool;state.practice.currentIndex=0;state.practice.answers={};switchTab('practice');renderPracticeQuestion();window.scrollTo({top:0,behavior:'smooth'});
+            state.practice.mode='weak';state.practice.currentCategory='WEAK';state.practice.questions=pool;state.practice.currentIndex=0;state.practice.answers={};switchTab('practice');renderPracticeQuestion();
         }
         function scrollPracticeToTop(){const m=document.querySelector('main');if(m)m.scrollTo({top:0,behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'})}
 
@@ -723,7 +797,7 @@
             } else if (tabId === 'flashcards') {
                 initFlashcards();
             }
-            if(window.matchMedia('(max-width:767px)').matches) requestAnimationFrame(scrollPracticeToTop);
+            
         }
 
         function updateDashboardStats() {
