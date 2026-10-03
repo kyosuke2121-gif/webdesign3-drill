@@ -32,8 +32,7 @@
             --mobile-bottom-bar-height: 4.2rem;
         }
         html, body {
-            height: 100%;
-            overflow: hidden; /* ページ全体スクロールを防止 */
+            min-height: 100%;
             font-family: 'Noto Sans JP', 'Inter', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
@@ -73,24 +72,27 @@
         .progress-fill { height: 100%; border-radius: inherit; transition: width .35s ease; }
         .mini-bar { height: 6px; border-radius: 999px; overflow: hidden; background: rgba(15,23,42,.9); }
 
-        /* スマホ用全画面固定レイアウト */
+        /* スマホ用レイアウト最適化（固定張り付きバグの解消） */
         @media (max-width: 767px) {
+            body {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
             #tab-practice {
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-                overflow: hidden;
+                display: block;
+                height: auto;
+                min-height: 100%;
+                overflow: visible;
             }
             .practice-container-mobile {
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-                overflow: hidden;
-                padding-bottom: calc(var(--mobile-bottom-bar-height) + var(--mobile-nav-height) + var(--safe-bottom));
+                display: block;
+                height: auto;
+                overflow: visible;
+                padding-bottom: calc(var(--mobile-bottom-bar-height) + var(--mobile-nav-height) + var(--safe-bottom) + 1.5rem);
             }
             .options-scroll-area {
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+                overflow: visible;
+                height: auto;
             }
             .fixed-bottom-action-bar {
                 position: fixed;
@@ -108,7 +110,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0f172a">
 </head>
-<body class="h-screen w-screen flex flex-col md:flex-row bg-slate-900 text-slate-100 overflow-hidden">
+<body class="min-h-screen w-screen flex flex-col md:flex-row bg-slate-900 text-slate-100">
 
     <!-- サイドバーナビゲーション (PC限定完全表示：スマホでは hidden で非表示) -->
     <aside class="hidden md:flex w-64 md:min-h-screen bg-slate-950 border-r border-slate-800 flex-shrink-0 flex-col justify-between z-20 md:sticky md:top-0">
@@ -155,10 +157,10 @@
     </aside>
 
     <!-- メインコンテンツ -->
-    <main class="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-4 md:p-8 h-full overflow-hidden flex flex-col">
+    <main class="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-4 md:p-8 flex flex-col">
 
         <!-- DASHBOARD TAB -->
-        <section id="tab-dashboard" class="tab-content flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-20 md:pb-8">
+        <section id="tab-dashboard" class="tab-content flex-1 space-y-6 pb-20 md:pb-8">
             <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 border border-blue-700/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl">
                 <div class="relative z-10 max-w-2xl space-y-3">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-xs font-bold">
@@ -213,8 +215,8 @@
         </section>
 
         <!-- PRACTICE TAB (問題集) -->
-        <section id="tab-practice" class="tab-content hidden h-full flex flex-col overflow-hidden">
-            <div class="practice-container-mobile flex flex-col h-full overflow-hidden">
+        <section id="tab-practice" class="tab-content hidden flex-1 flex flex-col">
+            <div class="practice-container-mobile flex flex-col">
                 
                 <!-- PC専用：分野選択・シャッフルコントロール（スマホでは hidden） -->
                 <div class="hidden md:flex bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 flex-row items-center justify-between gap-4 mb-4 flex-shrink-0">
@@ -239,10 +241,10 @@
                     </div>
                 </div>
 
-                <!-- メイン演習エリア（スマホでは画面中央に最大表示） -->
-                <div id="practice-area" class="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700 shadow-xl flex-1 flex flex-col justify-between overflow-hidden">
+                <!-- メイン演習エリア -->
+                <div id="practice-area" class="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700 shadow-xl flex-1 flex flex-col justify-between">
                     
-                    <!-- 上部ヘッダー（通常演習・正答率・ブックマークは PC 専用: hidden md:flex） -->
+                    <!-- 上部ヘッダー -->
                     <div class="flex-shrink-0 space-y-2 mb-2">
                         <div class="hidden md:flex items-center justify-between gap-3">
                             <span id="practice-mode-label" class="text-xs font-black uppercase tracking-wider text-slate-400">通常演習</span>
@@ -253,7 +255,7 @@
                             </label>
                         </div>
 
-                        <!-- 問題進行カウンター ＆ カテゴリタグ (スマホでも表示) -->
+                        <!-- 問題進行カウンター ＆ カテゴリタグ -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-700/80">
                             <span id="practice-category-badge" class="px-2.5 py-0.5 bg-blue-950 text-blue-300 border border-blue-800/50 font-bold text-[11px] rounded-full">カテゴリ</span>
                             <div class="flex items-center gap-3">
@@ -265,16 +267,14 @@
                         </div>
                     </div>
 
-                    <!-- 問題文＋選択肢 スクロールエリア（中心領域） -->
-                    <div class="flex-1 flex flex-col overflow-hidden my-auto">
-                        <!-- 問題文固定エリア -->
+                    <!-- 問題文＋選択肢 エリア -->
+                    <div class="flex-1 flex flex-col my-auto">
                         <div class="flex-shrink-0 space-y-1 mb-3">
                             <span id="practice-type-tag" class="text-[10px] font-black text-blue-400 uppercase tracking-wider">択一形式</span>
                             <h3 id="practice-question-text" class="text-base md:text-lg font-bold text-slate-100 leading-snug">問題文を読み込んでいます...</h3>
                         </div>
 
-                        <!-- 選択肢 ＆ 解説スクロール領域 (選択肢が多い場合のみ内部スクロール) -->
-                        <div class="options-scroll-area flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2.5">
+                        <div class="options-scroll-area flex-1 space-y-2.5">
                             <div id="practice-options" class="space-y-2.5"></div>
                             <div id="practice-explanation" class="hidden rounded-xl p-3 border transition-all text-xs md:text-sm mt-3"></div>
                         </div>
@@ -305,7 +305,7 @@
         </section>
 
         <!-- EXAM TAB (模擬試験) -->
-        <section id="tab-exam" class="tab-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-20 md:pb-8">
+        <section id="tab-exam" class="tab-content hidden flex-1 space-y-6 pb-20 md:pb-8">
             <div id="exam-intro" class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl max-w-2xl mx-auto text-center space-y-6">
                 <div class="w-16 h-16 bg-blue-950 text-blue-400 border border-blue-800/50 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">⏱️</div>
                 <div class="space-y-2">
@@ -398,7 +398,7 @@
         </section>
 
         <!-- BOOKMARKS TAB -->
-        <section id="tab-bookmarks" class="tab-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-20 md:pb-8">
+        <section id="tab-bookmarks" class="tab-content hidden flex-1 space-y-6 pb-20 md:pb-8">
             <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-white">ブックマークノート</h2>
@@ -410,7 +410,7 @@
         </section>
 
         <!-- FLASHCARDS TAB -->
-        <section id="tab-flashcards" class="tab-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-20 md:pb-8">
+        <section id="tab-flashcards" class="tab-content hidden flex-1 space-y-6 pb-20 md:pb-8">
             <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-bold text-white">重要用語単語帳 (40選)</h2>
@@ -448,7 +448,7 @@
         </section>
 
         <!-- WEAK TAB -->
-        <section id="tab-weak" class="tab-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-20 md:pb-8">
+        <section id="tab-weak" class="tab-content hidden flex-1 space-y-6 pb-20 md:pb-8">
             <div class="bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-900 p-5 md:p-7 rounded-2xl border border-rose-900/60">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -469,7 +469,7 @@
         </section>
 
         <!-- SETTINGS TAB -->
-        <section id="tab-settings" class="tab-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-20 md:pb-8">
+        <section id="tab-settings" class="tab-content hidden flex-1 space-y-6 pb-20 md:pb-8">
             <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
                 <h2 class="text-xl font-bold text-white">データ管理・バックアップ</h2>
                 <p class="text-xs text-slate-400">学習進捗やブックマークの保存・復元・初期化を行えます。</p>
@@ -788,6 +788,7 @@
         }
 
         function scrollPracticeToTop(){
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             const optionsScrollArea = document.querySelector('.options-scroll-area');
             if (optionsScrollArea) {
                 optionsScrollArea.scrollTop = 0;
@@ -820,6 +821,8 @@
                 mobileNav.classList.add('text-blue-400');
             }
 
+            window.scrollTo(0, 0);
+
             if (tabId === 'dashboard') updateDashboardStats();
             if (tabId === 'practice' && state.practice.questions.length === 0) startPracticeSession();
             if (tabId === 'bookmarks') renderBookmarks();
@@ -851,8 +854,8 @@
                                 <p class="text-xs text-slate-400">${catQuestions.length}問</p>
                             </div>
                             <div class="mt-3 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
-                                <span class="text-slate-400">正答率</span>
-                                <span class="font-bold text-blue-400">${catAcc}%</span>
+                                <span class="text-slate-400">正解率</span>
+                                <span class="font-bold ${catAcc >= 70 ? 'text-emerald-400' : 'text-slate-300'}">${stats.answered > 0 ? catAcc + '%' : '未挑戦'}</span>
                             </div>
                         </div>
                     `;
@@ -863,145 +866,123 @@
         function selectCategoryAndStart(catKey) {
             const select = document.getElementById('practice-category-select');
             if (select) select.value = catKey;
-            startPracticeSession();
             switchTab('practice');
+            startPracticeSession();
         }
 
-        // --- PRACTICE SESSION LOGIC ---
         function startPracticeSession() {
             clearPracticeAutoNextTimer();
+            state.practice.mode = 'normal';
             const select = document.getElementById('practice-category-select');
-            const category = select ? select.value : 'ALL';
+            state.practice.currentCategory = select ? select.value : 'ALL';
             
-            let filtered = category === 'ALL' 
-                ? [...QUESTIONS] 
-                : QUESTIONS.filter(q => q.category === category);
-            
-            // いつでもランダムにシャッフルしてセット
-            state.practice.questions = shuffleArray(filtered);
+            let pool = QUESTIONS;
+            if (state.practice.currentCategory !== 'ALL') {
+                pool = QUESTIONS.filter(q => q.category === state.practice.currentCategory);
+            }
+            state.practice.questions = shuffleArray(pool);
             state.practice.currentIndex = 0;
             state.practice.answers = {};
-            state.practice.currentCategory = category;
-            state.practice.mode = 'normal';
-
-            const modeLabel = document.getElementById('practice-mode-label');
-            if(modeLabel) modeLabel.textContent = category === 'ALL' ? '全分野演習 (ランダム)' : CATEGORIES[category];
-
             renderPracticeQuestion();
         }
 
         function renderPracticeQuestion() {
             clearPracticeAutoNextTimer();
+            scrollPracticeToTop();
+
             const q = state.practice.questions[state.practice.currentIndex];
             if (!q) return;
 
-            document.getElementById('practice-category-badge').textContent = CATEGORIES[q.category] || '総合';
+            document.getElementById('practice-category-badge').textContent = CATEGORIES[q.category] || q.category;
             document.getElementById('practice-progress-text').textContent = `問題 ${state.practice.currentIndex + 1} / ${state.practice.questions.length}`;
-            document.getElementById('practice-type-tag').textContent = q.type === 'tf' ? '○×形式' : '四肢択一形式';
+            document.getElementById('practice-type-tag').textContent = q.type === 'tf' ? '○×形式' : '四肢択一';
             document.getElementById('practice-question-text').textContent = q.question;
 
-            const bookmarkBtn = document.getElementById('practice-bookmark-btn');
-            const isBookmarked = state.userData.bookmarks.includes(q.id);
-            if (bookmarkBtn) {
-                bookmarkBtn.innerHTML = isBookmarked ? '🔖 保存済み' : '📁 ブックマーク保存';
-                bookmarkBtn.className = isBookmarked 
-                    ? 'hidden md:flex text-amber-400 items-center gap-1 text-xs font-semibold' 
-                    : 'hidden md:flex text-slate-400 hover:text-amber-400 transition items-center gap-1 text-xs font-semibold';
-            }
+            const modeLabel = document.getElementById('practice-mode-label');
+            if(modeLabel) modeLabel.textContent = state.practice.mode === 'weak' ? '苦手演習モード' : '通常演習';
+
+            const answeredCount = Object.keys(state.practice.answers).length;
+            let correctInSession = 0;
+            Object.entries(state.practice.answers).forEach(([idx, selected]) => {
+                if (state.practice.questions[idx] && selected === state.practice.questions[idx].correct) correctInSession++;
+            });
+            const sessionAcc = answeredCount > 0 ? Math.round((correctInSession / answeredCount) * 100) : '--';
+            const scoreLabel = document.getElementById('practice-session-score');
+            if (scoreLabel) scoreLabel.textContent = `正答率: ${sessionAcc}${sessionAcc !== '--' ? '%' : ''}`;
 
             const optionsContainer = document.getElementById('practice-options');
             const explanationEl = document.getElementById('practice-explanation');
-            explanationEl.classList.add('hidden');
-
-            const userAnswer = state.practice.answers[state.practice.currentIndex];
+            const isAnswered = state.practice.answers[state.practice.currentIndex] !== undefined;
+            const selectedIdx = state.practice.answers[state.practice.currentIndex];
 
             optionsContainer.innerHTML = q.options.map((opt, idx) => {
-                let btnClass = "w-full text-left p-3.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition text-xs md:text-sm text-slate-200 flex items-center justify-between question-option";
-                let badgeHtml = `<span class="w-5 h-5 rounded-full border border-slate-600 flex items-center justify-center text-[10px] text-slate-400 flex-shrink-0 ml-2">${idx + 1}</span>`;
+                let btnStyle = "bg-slate-900/80 border-slate-700/80 text-slate-200 hover:border-slate-500";
+                let badge = "";
 
-                if (userAnswer !== undefined) {
+                if (isAnswered) {
                     if (idx === q.correct) {
-                        btnClass = "w-full text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-950/40 text-emerald-200 text-xs md:text-sm font-bold flex items-center justify-between question-option";
-                        badgeHtml = `<span class="text-emerald-400 font-bold ml-2 flex-shrink-0 text-xs">✓ 正解</span>`;
-                    } else if (userAnswer === idx) {
-                        btnClass = "w-full text-left p-3.5 rounded-xl border-2 border-rose-500 bg-rose-950/40 text-rose-200 text-xs md:text-sm font-bold flex items-center justify-between question-option";
-                        badgeHtml = `<span class="text-rose-400 font-bold ml-2 flex-shrink-0 text-xs">✕ 不正解</span>`;
+                        btnStyle = "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold";
+                        badge = '<span class="ml-auto text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded">正解</span>';
+                    } else if (idx === selectedIdx) {
+                        btnStyle = "bg-rose-950/80 border-rose-500 text-rose-200 font-bold";
+                        badge = '<span class="ml-auto text-xs bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded">不正解</span>';
                     } else {
-                        btnClass = "w-full text-left p-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-500 text-xs md:text-sm flex items-center justify-between opacity-50 question-option";
+                        btnStyle = "bg-slate-900/40 border-slate-800 text-slate-500 opacity-60";
                     }
                 }
 
                 return `
-                    <button onclick="selectPracticeAnswer(${idx})" ${userAnswer !== undefined ? 'disabled' : ''} class="${btnClass}">
-                        <span class="pr-2 leading-snug">${escapeHTML(opt)}</span>
-                        ${badgeHtml}
+                    <button onclick="handlePracticeAnswer(${idx})" ${isAnswered ? 'disabled' : ''} class="question-option w-full p-3.5 rounded-xl border text-left text-xs md:text-sm font-medium transition flex items-center justify-between ${btnStyle}">
+                        <span>${escapeHTML(opt)}</span>
+                        ${badge}
                     </button>
                 `;
             }).join('');
 
-            if (userAnswer !== undefined) {
-                const isCorrect = userAnswer === q.correct;
-                explanationEl.className = `rounded-xl p-3 border transition-all text-xs md:text-sm ${
-                    isCorrect ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-200' : 'bg-rose-950/30 border-rose-800/50 text-rose-200'
-                }`;
-                explanationEl.innerHTML = `
-                    <div class="font-bold mb-1 flex items-center gap-2">
-                        <span>${isCorrect ? '⭕ 正解！' : '❌ 不正解...'}</span>
-                    </div>
-                    <p class="text-slate-300 leading-relaxed text-xs md:text-sm">${escapeHTML(q.explanation)}</p>
-                `;
-                explanationEl.classList.remove('hidden');
-            }
-
-            // スコア状況の更新
-            const answeredCount = Object.keys(state.practice.answers).length;
-            if (answeredCount > 0) {
-                let correctInSession = 0;
-                Object.entries(state.practice.answers).forEach(([index, ansIdx]) => {
-                    if (state.practice.questions[index] && state.practice.questions[index].correct === ansIdx) {
-                        correctInSession++;
-                    }
-                });
-                const accPercent = Math.round((correctInSession / answeredCount) * 100);
-                const scoreEl = document.getElementById('practice-session-score');
-                if (scoreEl) scoreEl.textContent = `正答率: ${accPercent}% (${correctInSession}/${answeredCount})`;
-            }
-
-            // ナビゲーションボタン表示の設定 (PC / モバイル両対応)
-            const isLast = state.practice.currentIndex === state.practice.questions.length - 1;
-            const nextBtn = document.getElementById('practice-next-btn');
-            const mobileNextBtn = document.getElementById('mobile-practice-next-btn');
-
-            if (nextBtn) {
-                if (isLast) {
-                    nextBtn.innerHTML = '🔄 最初から挑戦';
-                    nextBtn.className = 'tap-target w-full px-3 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 shadow-lg shadow-emerald-600/20';
+            if (isAnswered) {
+                const isCorrect = selectedIdx === q.correct;
+                explanationEl.classList.remove('hidden', 'bg-emerald-950/40', 'border-emerald-800/60', 'bg-rose-950/40', 'border-rose-800/60');
+                if (isCorrect) {
+                    explanationEl.classList.add('bg-emerald-950/40', 'border-emerald-800/60');
+                    explanationEl.innerHTML = `<div class="font-bold text-emerald-400 mb-1">⭕ 正解！</div><p class="text-slate-300">${escapeHTML(q.explanation)}</p>`;
                 } else {
-                    nextBtn.innerHTML = '次の問題 ▶';
-                    nextBtn.className = 'tap-target w-full px-3 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 shadow-lg shadow-blue-600/20';
+                    explanationEl.classList.add('bg-rose-950/40', 'border-rose-800/60');
+                    explanationEl.innerHTML = `<div class="font-bold text-rose-400 mb-1">❌ 不正解... (正解: ${escapeHTML(q.options[q.correct])})</div><p class="text-slate-300">${escapeHTML(q.explanation)}</p>`;
                 }
-            }
-            if (mobileNextBtn) {
-                mobileNextBtn.innerHTML = isLast ? '🔄 最初から' : '次の問題 ▶';
+            } else {
+                explanationEl.classList.add('hidden');
             }
 
-            scrollPracticeToTop();
+            const isBookmark = state.userData.bookmarks.includes(q.id);
+            const bmBtn = document.getElementById('practice-bookmark-btn');
+            if (bmBtn) {
+                bmBtn.innerHTML = isBookmark ? '🔖 ブックマーク解除' : '🔖 ブックマーク保存';
+                bmBtn.className = isBookmark 
+                    ? 'hidden md:flex text-amber-400 hover:text-amber-300 transition items-center gap-1 text-xs font-semibold' 
+                    : 'hidden md:flex text-slate-400 hover:text-amber-400 transition items-center gap-1 text-xs font-semibold';
+            }
+
+            const prevBtn = document.getElementById('practice-prev-btn');
+            const nextBtn = document.getElementById('practice-next-btn');
+            if (prevBtn) prevBtn.disabled = state.practice.currentIndex === 0;
+            if (nextBtn) nextBtn.disabled = state.practice.currentIndex === state.practice.questions.length - 1;
+
+            const mPrev = document.getElementById('mobile-practice-prev-btn');
+            const mNext = document.getElementById('mobile-practice-next-btn');
+            if (mPrev) mPrev.disabled = state.practice.currentIndex === 0;
+            if (mNext) mNext.disabled = state.practice.currentIndex === state.practice.questions.length - 1;
         }
 
-        function selectPracticeAnswer(idx) {
+        function handlePracticeAnswer(optIdx) {
+            clearPracticeAutoNextTimer();
             if (state.practice.answers[state.practice.currentIndex] !== undefined) return;
 
             const q = state.practice.questions[state.practice.currentIndex];
-            state.practice.answers[state.practice.currentIndex] = idx;
+            state.practice.answers[state.practice.currentIndex] = optIdx;
 
-            const isCorrect = idx === q.correct;
+            const isCorrect = optIdx === q.correct;
             state.userData.totalAnswered++;
-            if (isCorrect) {
-                state.userData.correctCount++;
-                removeWeakQuestion(q.id);
-            } else {
-                addWeakQuestion(q.id);
-            }
+            if (isCorrect) state.userData.correctCount++;
 
             if (!state.userData.categoryStats[q.category]) {
                 state.userData.categoryStats[q.category] = { answered: 0, correct: 0 };
@@ -1009,15 +990,22 @@
             state.userData.categoryStats[q.category].answered++;
             if (isCorrect) state.userData.categoryStats[q.category].correct++;
 
+            if (!isCorrect) {
+                addWeakQuestion(q.id);
+            } else if (state.practice.mode === 'weak') {
+                removeWeakQuestion(q.id);
+            }
+
             saveUserData();
             renderPracticeQuestion();
 
-            // 自動で次へ進む処理
-            const autoNext = document.getElementById('practice-auto-next-toggle');
-            if (autoNext && autoNext.checked && state.practice.currentIndex < state.practice.questions.length - 1) {
-                state.practiceAutoNextTimer = setTimeout(() => {
-                    nextPracticeQuestion();
-                }, 1500);
+            const autoNextToggle = document.getElementById('practice-auto-next-toggle');
+            if (autoNextToggle && autoNextToggle.checked) {
+                if (state.practice.currentIndex < state.practice.questions.length - 1) {
+                    state.practiceAutoNextTimer = setTimeout(() => {
+                        nextPracticeQuestion();
+                    }, 1200);
+                }
             }
         }
 
@@ -1026,9 +1014,6 @@
             if (state.practice.currentIndex < state.practice.questions.length - 1) {
                 state.practice.currentIndex++;
                 renderPracticeQuestion();
-            } else {
-                // 最後の問題の場合は最初から再スタート
-                startPracticeSession();
             }
         }
 
@@ -1043,7 +1028,6 @@
         function toggleBookmarkCurrentPractice() {
             const q = state.practice.questions[state.practice.currentIndex];
             if (!q) return;
-
             const idx = state.userData.bookmarks.indexOf(q.id);
             if (idx > -1) {
                 state.userData.bookmarks.splice(idx, 1);
@@ -1054,291 +1038,89 @@
             renderPracticeQuestion();
         }
 
-        // --- EXAM LOGIC ---
-        function startExam() {
-            document.getElementById('exam-intro').classList.add('hidden');
-            document.getElementById('exam-result').classList.add('hidden');
-            document.getElementById('exam-active').classList.remove('hidden');
-
-            state.exam.questions = shuffleArray(QUESTIONS).slice(0, 25);
-            state.exam.currentIndex = 0;
-            state.exam.answers = {};
-            state.exam.timeLeft = 2700; // 45分
-
-            if (state.exam.timer) clearInterval(state.exam.timer);
-            state.exam.timer = setInterval(() => {
-                state.exam.timeLeft--;
-                updateExamTimer();
-                if (state.exam.timeLeft <= 0) {
-                    clearInterval(state.exam.timer);
-                    finishExam();
-                }
-            }, 1000);
-
-            updateExamTimer();
-            renderExamQuestion();
-            renderExamGrid();
-        }
-
-        function updateExamTimer() {
-            const min = Math.floor(state.exam.timeLeft / 60);
-            const sec = state.exam.timeLeft % 60;
-            document.getElementById('exam-timer').textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-        }
-
-        function renderExamQuestion() {
-            const q = state.exam.questions[state.exam.currentIndex];
-            if (!q) return;
-
-            document.getElementById('exam-progress-indicator').textContent = `問題 ${state.exam.currentIndex + 1} / 25`;
-            document.getElementById('exam-progress-bar').style.width = `${((state.exam.currentIndex + 1) / 25) * 100}%`;
-            document.getElementById('exam-question-text').textContent = q.question;
-
-            const optionsContainer = document.getElementById('exam-options');
-            const selectedOpt = state.exam.answers[state.exam.currentIndex];
-
-            optionsContainer.innerHTML = q.options.map((opt, idx) => {
-                const isSelected = selectedOpt === idx;
-                const btnClass = isSelected
-                    ? "w-full text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-950/60 text-white font-bold flex items-center justify-between"
-                    : "w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 transition flex items-center justify-between";
-
-                return `
-                    <button onclick="selectExamAnswer(${idx})" class="${btnClass}">
-                        <span class="pr-2">${escapeHTML(opt)}</span>
-                        <span class="w-5 h-5 rounded-full border border-slate-600 flex items-center justify-center text-xs flex-shrink-0">${isSelected ? '●' : ''}</span>
-                    </button>
-                `;
-            }).join('');
-
-            document.getElementById('exam-prev-btn').disabled = state.exam.currentIndex === 0;
-            document.getElementById('exam-next-btn').textContent = state.exam.currentIndex === 24 ? '採点へ進む ▶' : '次へ ▶';
-
-            const answeredCount = Object.keys(state.exam.answers).length;
-            document.getElementById('exam-answered-summary').textContent = `回答済み: ${answeredCount} / 25 問`;
-        }
-
-        function selectExamAnswer(optIdx) {
-            state.exam.answers[state.exam.currentIndex] = optIdx;
-            renderExamQuestion();
-            renderExamGrid();
-        }
-
-        function navigateExamQuestion(delta) {
-            const nextIdx = state.exam.currentIndex + delta;
-            if (nextIdx >= 0 && nextIdx < 25) {
-                state.exam.currentIndex = nextIdx;
-                renderExamQuestion();
-            }
-        }
-
-        function handleExamNext() {
-            if (state.exam.currentIndex < 24) {
-                state.exam.currentIndex++;
-                renderExamQuestion();
-            } else {
-                finishExamPrompt();
-            }
-        }
-
-        function renderExamGrid() {
-            const grid = document.getElementById('exam-question-grid');
-            grid.innerHTML = state.exam.questions.map((_, idx) => {
-                const isAnswered = state.exam.answers[idx] !== undefined;
-                const isCurrent = state.exam.currentIndex === idx;
-                let bgClass = "bg-slate-900 border-slate-800 text-slate-500";
-                if (isCurrent) bgClass = "bg-blue-600 text-white font-bold border-blue-400";
-                else if (isAnswered) bgClass = "bg-slate-700 text-blue-300 border-slate-600";
-
-                return `
-                    <button onclick="jumpExamQuestion(${idx})" class="p-2 text-center rounded-lg text-xs border ${bgClass} transition">
-                        ${idx + 1}
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function jumpExamQuestion(idx) {
-            state.exam.currentIndex = idx;
-            renderExamQuestion();
-            renderExamGrid();
-        }
-
-        function finishExamPrompt() {
-            const answeredCount = Object.keys(state.exam.answers).length;
-            if (answeredCount < 25) {
-                if (!confirm(`まだ未回答の問題が ${25 - answeredCount} 問あります。採点を実行しますか？`)) {
-                    return;
-                }
-            }
-            finishExam();
-        }
-
-        function finishExam() {
-            if (state.exam.timer) clearInterval(state.exam.timer);
-
-            let correctCount = 0;
-            const categoryStats = {};
-
-            state.exam.questions.forEach((q, idx) => {
-                const userAns = state.exam.answers[idx];
-                const isCorrect = userAns === q.correct;
-                if (isCorrect) correctCount++;
-
-                if (!categoryStats[q.category]) {
-                    categoryStats[q.category] = { total: 0, correct: 0 };
-                }
-                categoryStats[q.category].total++;
-                if (isCorrect) categoryStats[q.category].correct++;
-
-                // 弱点ノートの同期
-                if (userAns !== undefined) {
-                    if (isCorrect) removeWeakQuestion(q.id);
-                    else addWeakQuestion(q.id);
-                }
-            });
-
-            const scorePercent = Math.round((correctCount / 25) * 100);
-            const isPassed = scorePercent >= 70;
-
-            if (state.userData.examHighScore === null || scorePercent > state.userData.examHighScore) {
-                state.userData.examHighScore = scorePercent;
-            }
-
-            state.userData.examHistory.push({
-                date: new Date().toLocaleDateString(),
-                score: scorePercent,
-                correctCount: correctCount
-            });
-            saveUserData();
-
-            // UIの切り替え
-            document.getElementById('exam-active').classList.add('hidden');
-            document.getElementById('exam-result').classList.remove('hidden');
-
-            document.getElementById('exam-badge').textContent = isPassed ? '🎉' : '⚠️';
-            document.getElementById('exam-status-title').textContent = isPassed ? '合格ライン達成！' : '不合格（70%未満）';
-            document.getElementById('exam-status-subtitle').textContent = isPassed 
-                ? '素晴らしい成果です！本番試験でも落ち着いて臨みましょう。' 
-                : '弱点分野を中心に復習し、再挑戦してみましょう！';
-
-            document.getElementById('exam-score-text').textContent = `${correctCount} / 25`;
-            document.getElementById('exam-accuracy-text').textContent = `${scorePercent}%`;
-
-            const catResultContainer = document.getElementById('exam-category-result');
-            catResultContainer.innerHTML = '<h4 class="font-bold text-xs text-slate-300 mb-2">分野別得点状況</h4>' + 
-                Object.entries(categoryStats).map(([catKey, stat]) => {
-                    const acc = Math.round((stat.correct / stat.total) * 100);
-                    return `
-                        <div class="space-y-1 text-xs">
-                            <div class="flex justify-between">
-                                <span class="text-slate-400">${escapeHTML(CATEGORIES[catKey])}</span>
-                                <span class="font-bold text-slate-200">${stat.correct} / ${stat.total} (${acc}%)</span>
-                            </div>
-                            <div class="mini-bar"><div class="progress-fill bg-blue-500" style="width:${acc}%"></div></div>
-                        </div>
-                    `;
-                }).join('');
-
-            // 全問レビューの生成
-            const reviewList = document.getElementById('exam-review-list');
-            reviewList.innerHTML = state.exam.questions.map((q, idx) => {
-                const userAns = state.exam.answers[idx];
-                const isCorrect = userAns === q.correct;
-                const isUnanswered = userAns === undefined;
-
-                return `
-                    <div class="p-4 rounded-xl border ${isCorrect ? 'border-emerald-800/50 bg-emerald-950/20' : 'border-rose-800/50 bg-rose-950/20'} space-y-2">
-                        <div class="flex items-center justify-between text-xs font-bold">
-                            <span class="text-slate-400">問題 ${idx + 1} [${CATEGORIES[q.category]}]</span>
-                            <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '⭕ 正解' : isUnanswered ? '⚪ 未回答' : '❌ 不正解'}</span>
-                        </div>
-                        <p class="font-bold text-sm text-slate-100">${escapeHTML(q.question)}</p>
-                        <div class="text-xs space-y-1 pt-2 border-t border-slate-700/50">
-                            <div class="text-slate-300">あなたの回答: <span class="font-bold">${isUnanswered ? 'なし' : escapeHTML(q.options[userAns])}</span></div>
-                            <div class="text-emerald-400 font-bold">模範解答: ${escapeHTML(q.options[q.correct])}</div>
-                            <p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // --- BOOKMARKS LOGIC ---
+        // --- BOOKMARKS TAB ---
         function renderBookmarks() {
             const container = document.getElementById('bookmarks-list-container');
-            const countBadge = document.getElementById('bookmark-badge-count');
-            const bookmarkedQuestions = QUESTIONS.filter(q => state.userData.bookmarks.includes(q.id));
+            const badgeCount = document.getElementById('bookmark-badge-count');
+            if (!container) return;
 
-            if (countBadge) countBadge.textContent = `${bookmarkedQuestions.length} 件`;
+            const bmQuestions = QUESTIONS.filter(q => state.userData.bookmarks.includes(q.id));
+            if (badgeCount) badgeCount.textContent = `${bmQuestions.length} 件`;
 
-            if (bookmarkedQuestions.length === 0) {
+            if (bmQuestions.length === 0) {
                 container.innerHTML = `
-                    <div class="p-8 text-center bg-slate-800/50 rounded-2xl border border-slate-700 text-slate-500 text-sm">
-                        保存されたブックマークはありません。<br>演習画面の「🔖 ブックマーク保存」を押すことでリストに追加できます。
+                    <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 text-center space-y-3">
+                        <div class="text-3xl">🔖</div>
+                        <p class="text-slate-400 text-sm">ブックマークされた問題はありません。</p>
+                        <p class="text-slate-500 text-xs">問題演習時に「ブックマーク保存」を押すとこちらにリスト化されます。</p>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = bookmarkedQuestions.map(q => `
+            container.innerHTML = bmQuestions.map(q => `
                 <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2.5 py-1 bg-purple-950 text-purple-300 border border-purple-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category])}</span>
-                        <button onclick="removeBookmark(${q.id})" class="text-xs text-slate-500 hover:text-rose-400 transition">削除</button>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="px-2.5 py-0.5 bg-purple-950 text-purple-300 border border-purple-800/60 font-bold text-[10px] rounded-full">
+                            ${escapeHTML(CATEGORIES[q.category] || q.category)}
+                        </span>
+                        <button onclick="removeBookmark(${q.id})" class="text-xs text-rose-400 hover:text-rose-300 font-medium">
+                            削除
+                        </button>
                     </div>
-                    <p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p>
-                    <div class="text-xs bg-slate-900/80 p-3 rounded-xl space-y-1">
-                        <div class="text-emerald-300 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div>
-                        <p class="text-slate-400">${escapeHTML(q.explanation)}</p>
+                    <h4 class="font-bold text-slate-100 text-sm md:text-base">${escapeHTML(q.question)}</h4>
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700/60 text-xs space-y-1">
+                        <p class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</p>
+                        <p class="text-slate-300 leading-relaxed">${escapeHTML(q.explanation)}</p>
                     </div>
                 </div>
             `).join('');
         }
 
         function removeBookmark(id) {
-            state.userData.bookmarks = state.userData.bookmarks.filter(bId => bId !== id);
-            saveUserData();
-            renderBookmarks();
+            const idx = state.userData.bookmarks.indexOf(id);
+            if (idx > -1) {
+                state.userData.bookmarks.splice(idx, 1);
+                saveUserData();
+                renderBookmarks();
+            }
         }
 
-        // --- FLASHCARDS LOGIC ---
+        // --- FLASHCARDS TAB ---
         function initFlashcards() {
-            state.flashcards.activeList = FLASHCARDS.filter(card => !state.userData.masteredCards.includes(card.id));
+            state.flashcards.activeList = FLASHCARDS.filter(c => !state.userData.masteredCards.includes(c.id));
             state.flashcards.currentIndex = 0;
             state.flashcards.isFlipped = false;
             renderFlashcard();
         }
 
         function renderFlashcard() {
-            const cardEl = document.getElementById('flashcard');
+            const list = state.flashcards.activeList;
             const counter = document.getElementById('flashcard-counter');
-            
-            if (state.flashcards.activeList.length === 0) {
-                document.getElementById('card-term').textContent = "すべての用語を暗記しました！";
-                document.getElementById('card-definition').textContent = "おめでとうございます！リセットボタンから再挑戦できます。";
-                document.getElementById('card-tag').textContent = "完了";
-                if (counter) counter.textContent = "0 / 0";
+            const cardEl = document.getElementById('flashcard');
+
+            if (!cardEl) return;
+            cardEl.style.transform = state.flashcards.isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+
+            if (list.length === 0) {
+                if (counter) counter.textContent = '完了';
+                document.getElementById('card-tag').textContent = '完全制覇';
+                document.getElementById('card-term').textContent = '🎉 全ての単語を暗記しました！';
+                document.getElementById('card-definition').textContent = '素晴らしい成果です。「暗記済をリセット」を押すと再挑戦できます。';
                 return;
             }
 
-            const current = state.flashcards.activeList[state.flashcards.currentIndex];
-            if (!current) return;
-
-            // 回転状態の復元
-            if (state.flashcards.isFlipped) cardEl.classList.add('rotate-y-180');
-            else cardEl.classList.remove('rotate-y-180');
+            if (counter) counter.textContent = `${state.flashcards.currentIndex + 1} / ${list.length}`;
+            const current = list[state.flashcards.currentIndex];
 
             document.getElementById('card-tag').textContent = current.category;
             document.getElementById('card-term').textContent = current.term;
             document.getElementById('card-definition').textContent = current.def;
-
-            if (counter) counter.textContent = `${state.flashcards.currentIndex + 1} / ${state.flashcards.activeList.length}`;
         }
 
         function handleFlashcardClick(e) {
             state.flashcards.isFlipped = !state.flashcards.isFlipped;
-            document.getElementById('flashcard').classList.toggle('rotate-y-180', state.flashcards.isFlipped);
+            renderFlashcard();
         }
 
         function nextCard() {
@@ -1356,9 +1138,8 @@
         }
 
         function toggleCardMastered() {
+            if (state.flashcards.activeList.length === 0) return;
             const current = state.flashcards.activeList[state.flashcards.currentIndex];
-            if (!current) return;
-
             if (!state.userData.masteredCards.includes(current.id)) {
                 state.userData.masteredCards.push(current.id);
                 saveUserData();
@@ -1367,52 +1148,260 @@
         }
 
         function resetMasteredCards() {
-            if (confirm('暗記済みデータをリセットしますか？')) {
+            if (confirm('暗記済みカードの記録を初期化して、すべての単語を再表示しますか？')) {
                 state.userData.masteredCards = [];
                 saveUserData();
                 initFlashcards();
             }
         }
 
-        // --- SETTINGS LOGIC ---
-        function exportUserData() {
-            const jsonStr = JSON.stringify(state.userData, null, 2);
-            const blob = new Blob([jsonStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `web3_study_backup_${new Date().toISOString().slice(0, 10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+        // --- EXAM TAB ---
+        function startExam() {
+            document.getElementById('exam-intro').classList.add('hidden');
+            document.getElementById('exam-result').classList.add('hidden');
+            document.getElementById('exam-active').classList.remove('hidden');
+
+            state.exam.questions = shuffleArray(QUESTIONS).slice(0, 25);
+            state.exam.currentIndex = 0;
+            state.exam.answers = {};
+            state.exam.timeLeft = 2700; 
+
+            if (state.exam.timer) clearInterval(state.exam.timer);
+            state.exam.timer = setInterval(updateExamTimer, 1000);
+
+            renderExamQuestion();
+            renderExamGrid();
         }
 
-        function importUserData(e) {
-            const file = e.target.files[0];
+        function updateExamTimer() {
+            state.exam.timeLeft--;
+            const mins = Math.floor(state.exam.timeLeft / 60);
+            const secs = state.exam.timeLeft % 60;
+            const timerEl = document.getElementById('exam-timer');
+            if (timerEl) {
+                timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            if (state.exam.timeLeft <= 0) {
+                clearInterval(state.exam.timer);
+                alert('制限時間（45分）が経過しました。採点を開始します。');
+                finishExam();
+            }
+        }
+
+        function renderExamQuestion() {
+            window.scrollTo(0, 0);
+            const q = state.exam.questions[state.exam.currentIndex];
+            if (!q) return;
+
+            document.getElementById('exam-progress-indicator').textContent = `問題 ${state.exam.currentIndex + 1} / 25`;
+            document.getElementById('exam-question-text').textContent = q.question;
+
+            const progressBar = document.getElementById('exam-progress-bar');
+            if (progressBar) {
+                progressBar.style.width = `${((state.exam.currentIndex + 1) / 25) * 100}%`;
+            }
+
+            const optionsContainer = document.getElementById('exam-options');
+            const selectedIdx = state.exam.answers[state.exam.currentIndex];
+
+            optionsContainer.innerHTML = q.options.map((opt, idx) => {
+                const isSelected = selectedIdx === idx;
+                const btnStyle = isSelected 
+                    ? "bg-blue-600 border-blue-400 text-white font-bold shadow-lg shadow-blue-600/30" 
+                    : "bg-slate-900 border-slate-700 text-slate-200 hover:border-slate-500";
+                return `
+                    <button onclick="selectExamAnswer(${idx})" class="question-option w-full p-4 rounded-xl border text-left text-sm font-medium transition flex items-center justify-between ${btnStyle}">
+                        <span>${escapeHTML(opt)}</span>
+                        ${isSelected ? '<span>L</span>' : ''}
+                    </button>
+                `;
+            }).join('');
+
+            const prevBtn = document.getElementById('exam-prev-btn');
+            const nextBtn = document.getElementById('exam-next-btn');
+            if (prevBtn) prevBtn.disabled = state.exam.currentIndex === 0;
+            if (nextBtn) {
+                nextBtn.textContent = state.exam.currentIndex === 24 ? '最終確認へ ▶' : '次へ ▶';
+            }
+
+            const summaryEl = document.getElementById('exam-answered-summary');
+            if (summaryEl) {
+                summaryEl.textContent = `回答済み: ${Object.keys(state.exam.answers).length} / 25 問`;
+            }
+        }
+
+        function selectExamAnswer(optIdx) {
+            state.exam.answers[state.exam.currentIndex] = optIdx;
+            renderExamQuestion();
+            renderExamGrid();
+        }
+
+        function navigateExamQuestion(dir) {
+            const newIndex = state.exam.currentIndex + dir;
+            if (newIndex >= 0 && newIndex < 25) {
+                state.exam.currentIndex = newIndex;
+                renderExamQuestion();
+            }
+        }
+
+        function handleExamNext() {
+            if (state.exam.currentIndex < 24) {
+                navigateExamQuestion(1);
+            } else {
+                finishExamPrompt();
+            }
+        }
+
+        function renderExamGrid() {
+            const grid = document.getElementById('exam-question-grid');
+            if (!grid) return;
+
+            grid.innerHTML = Array.from({ length: 25 }).map((_, idx) => {
+                const isAnswered = state.exam.answers[idx] !== undefined;
+                const isCurrent = state.exam.currentIndex === idx;
+                let bgStyle = "bg-slate-900 text-slate-400 border-slate-700";
+
+                if (isCurrent) {
+                    bgStyle = "bg-blue-600 text-white border-blue-400 font-black ring-2 ring-blue-400/50";
+                } else if (isAnswered) {
+                    bgStyle = "bg-blue-950 text-blue-300 border-blue-700 font-bold";
+                }
+
+                return `
+                    <button onclick="jumpToExamQuestion(${idx})" class="py-2 rounded-lg border text-xs text-center transition ${bgStyle}">
+                        ${idx + 1}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function jumpToExamQuestion(idx) {
+            state.exam.currentIndex = idx;
+            renderExamQuestion();
+        }
+
+        function finishExamPrompt() {
+            const unanswered = 25 - Object.keys(state.exam.answers).length;
+            if (unanswered > 0) {
+                if (!confirm(`まだ未回答の問題が ${unanswered} 問あります。模擬試験を終了して採点しますか？`)) {
+                    return;
+                }
+            } else {
+                if (!confirm('模擬試験を終了して採点を行いますか？')) {
+                    return;
+                }
+            }
+            finishExam();
+        }
+
+        function finishExam() {
+            if (state.exam.timer) clearInterval(state.exam.timer);
+
+            let score = 0;
+            state.exam.questions.forEach((q, idx) => {
+                if (state.exam.answers[idx] === q.correct) {
+                    score++;
+                } else {
+                    addWeakQuestion(q.id);
+                }
+            });
+
+            const percentage = Math.round((score / 25) * 100);
+            const isPassed = percentage >= 70;
+
+            if (state.userData.examHighScore === null || percentage > state.userData.examHighScore) {
+                state.userData.examHighScore = percentage;
+            }
+            saveUserData();
+
+            document.getElementById('exam-active').classList.add('hidden');
+            document.getElementById('exam-result').classList.remove('hidden');
+
+            document.getElementById('exam-score-text').textContent = `${score} / 25`;
+            document.getElementById('exam-accuracy-text').textContent = `${percentage}%`;
+
+            const badge = document.getElementById('exam-badge');
+            const title = document.getElementById('exam-status-title');
+            const subtitle = document.getElementById('exam-status-subtitle');
+
+            if (isPassed) {
+                badge.textContent = '🎉';
+                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl bg-emerald-950 border border-emerald-500 shadow-lg shadow-emerald-500/20';
+                title.textContent = '合格ライン達成！';
+                title.className = 'text-2xl font-black text-emerald-400';
+                subtitle.textContent = '素晴らしい成績です！この調子で本番に備えましょう。';
+            } else {
+                badge.textContent = '💪';
+                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl bg-rose-950 border border-rose-500 shadow-lg shadow-rose-500/20';
+                title.textContent = '不合格 (あと一歩！)';
+                title.className = 'text-2xl font-black text-rose-400';
+                subtitle.textContent = '合格基準は70%（18問以上正解）です。解説を確認して復習しましょう。';
+            }
+
+            const reviewList = document.getElementById('exam-review-list');
+            if (reviewList) {
+                reviewList.innerHTML = state.exam.questions.map((q, idx) => {
+                    const userAns = state.exam.answers[idx];
+                    const isCorrect = userAns === q.correct;
+                    return `
+                        <div class="p-4 rounded-xl border ${isCorrect ? 'bg-slate-900/60 border-slate-700/80' : 'bg-rose-950/20 border-rose-900/50'} space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-slate-400">問題 ${idx + 1} (${CATEGORIES[q.category] || q.category})</span>
+                                <span class="${isCorrect ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">
+                                    ${isCorrect ? '⭕ 正解' : '❌ 不正解'}
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-100">${escapeHTML(q.question)}</h4>
+                            <div class="text-xs space-y-1 bg-slate-950/80 p-3 rounded-lg border border-slate-800">
+                                <p class="text-slate-300">あなたの回答: <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'} font-bold">${userAns !== undefined ? escapeHTML(q.options[userAns]) : '未回答'}</span></p>
+                                <p class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</p>
+                                <p class="text-slate-400 mt-2 pt-2 border-t border-slate-800">${escapeHTML(q.explanation)}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // --- SETTINGS TAB ---
+        function exportUserData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.userData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `web3_exam_data_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importUserData(event) {
+            const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = function(e) {
                 try {
-                    const parsed = JSON.parse(evt.target.result);
-                    state.userData = { ...state.userData, ...parsed };
+                    const imported = JSON.parse(e.target.result);
+                    state.userData = { ...state.userData, ...imported };
                     saveUserData();
-                    alert('データを正常に復元しました。');
+                    alert('データを正常に復元・インポートしました。');
                     location.reload();
                 } catch(err) {
-                    alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');
+                    alert('ファイルの読み込みに失敗しました。正しいJSONファイルかご確認ください。');
                 }
             };
             reader.readAsText(file);
         }
 
         function resetUserData() {
-            if (confirm('すべての学習履歴、ブックマーク、苦手データを消旧しますか？この操作は取り消せません。')) {
+            if (confirm('【警告】すべての学習進捗・正答率・ブックマークが完全消去されます。本当にリセットしますか？')) {
                 localStorage.removeItem('web3_master_data');
                 location.reload();
             }
         }
 
-        // --- INITIALIZATION ---
+        // INIT
         window.addEventListener('DOMContentLoaded', () => {
             loadUserData();
             switchTab('dashboard');
