@@ -173,6 +173,133 @@
 }
 </style>
 
+
+<style id="mobile-practice-final-ui">
+@media (max-width: 767px) {
+  /* Never render the desktop sidebar on phones. */
+  body > aside {
+    display: none !important;
+  }
+
+  /* When the practice tab is active, the main area becomes the whole
+     available app viewport above the fixed bottom navigation. */
+  main:has(#tab-practice:not(.hidden)) {
+    height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    min-height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    max-height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    overflow: hidden !important;
+    padding: .35rem .55rem 0 !important;
+    margin: 0 !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #tab-practice {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0 !important;
+  }
+
+  /* The category selector / shuffle header is useful on desktop, but on
+     mobile it consumes exactly the space needed for the question. */
+  main:has(#tab-practice:not(.hidden)) #tab-practice > div:first-child {
+    display: none !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    padding: .55rem .6rem .35rem !important;
+    margin: 0 !important;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0 !important;
+    overflow: hidden;
+  }
+
+  /* Hide the two information rows inside the practice card.
+     The mobile learning loop should be:
+     question -> choice -> automatic next question. */
+  main:has(#tab-practice:not(.hidden)) #practice-area > div:nth-child(1),
+  main:has(#tab-practice:not(.hidden)) #practice-area > div:nth-child(2) {
+    display: none !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-type-tag {
+    display: block;
+    flex: 0 0 auto;
+    font-size: .65rem;
+    line-height: 1.2;
+    margin: .1rem 0 .35rem;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-question-text {
+    flex: 0 0 auto;
+    margin: 0 0 .55rem;
+    max-height: 31%;
+    overflow-y: auto;
+    font-size: 1.02rem !important;
+    line-height: 1.55 !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-options {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem !important;
+    overscroll-behavior: contain;
+    padding-right: .05rem;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-options > * {
+    flex: 0 0 auto;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-options .question-option,
+  main:has(#tab-practice:not(.hidden)) #practice-options button {
+    min-height: 0 !important;
+    padding: .62rem .7rem !important;
+    font-size: .92rem;
+    line-height: 1.45;
+  }
+
+  /* Explanations are intentionally suppressed during rapid practice.
+     Weak-question review still shows explanations. */
+  main:has(#tab-practice:not(.hidden)) #practice-explanation {
+    display: none !important;
+  }
+
+  /* Navigation is part of the fixed practice screen, not page scrolling. */
+  main:has(#tab-practice:not(.hidden)) .practice-question-nav {
+    position: static !important;
+    flex: 0 0 auto;
+    margin: .45rem 0 0 !important;
+    padding: .35rem 0 calc(.2rem + var(--safe-bottom)) !important;
+    border-top: 1px solid rgba(71,85,105,.65);
+    background: #1e293b !important;
+    z-index: 10;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-prev-btn,
+  main:has(#tab-practice:not(.hidden)) #practice-next-btn {
+    min-height: 48px !important;
+    height: 48px;
+    font-size: .9rem;
+  }
+
+  /* Do not add artificial page clearance while the practice viewport is
+     already sized above the mobile navigation. */
+  main:has(#tab-practice:not(.hidden)) {
+    padding-bottom: 0 !important;
+  }
+}
+</style>
+
 </head>
 <body class="min-h-screen flex flex-col md:flex-row bg-slate-900 text-slate-100">
 
