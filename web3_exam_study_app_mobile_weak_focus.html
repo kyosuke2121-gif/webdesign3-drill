@@ -1,0 +1,1349 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webデザイン技能検定3級 学科試験対策マスター Pro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+        body { font-family: 'Noto Sans JP', 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; line-height: 1.65; }
+        button, select { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        button:focus-visible, select:focus-visible { outline: 3px solid rgba(96, 165, 250, .9); outline-offset: 2px; }
+        .tap-target { min-height: 44px; }
+        .question-option { min-height: 58px; }
+        .safe-bottom { padding-bottom: calc(5.5rem + var(--safe-bottom)); }
+        /* Mobile bottom navigation height + fixed/sticky content clearance */
+        :root { --mobile-nav-height: 4.75rem; }
+        .mobile-bottom-nav {
+            min-height: var(--mobile-nav-height);
+            padding-bottom: calc(.625rem + var(--safe-bottom));
+        }
+        .mobile-nav-btn {
+            min-width: 44px;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        /* Keep question navigation comfortably above the fixed mobile nav. */
+        .practice-question-nav {
+            position: sticky;
+            bottom: calc(var(--mobile-nav-height) + var(--safe-bottom));
+            z-index: 15;
+            margin-top: .5rem;
+            padding: .75rem 0;
+            background: linear-gradient(to bottom, rgba(15,23,42,0), rgba(15,23,42,.97) 30%);
+        }
+        /* Horizontal swipe is handled by JS; vertical page scrolling remains natural. */
+        .flashcard-swipe {
+            touch-action: pan-y;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        @media (max-width: 767px) {
+            .practice-question-nav {
+                bottom: calc(var(--mobile-nav-height) + var(--safe-bottom) - .15rem);
+                padding-bottom: .5rem;
+            }
+            #practice-next-btn, #practice-prev-btn {
+                min-height: 50px;
+            }
+            #flashcard-container {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }
+        }
+        @media (max-width: 767px) {
+            .question-option { min-height: 62px; font-size: .95rem; }
+            #practice-question-text, #exam-question-text { font-size: 1.08rem; line-height: 1.8; }
+        }
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .progress-track { height: 8px; border-radius: 999px; overflow: hidden; background: rgba(15,23,42,.9); }
+        .progress-fill { height: 100%; border-radius: inherit; transition: width .35s ease; }
+        .mini-bar { height: 6px; border-radius: 999px; overflow: hidden; background: rgba(15,23,42,.9); }
+        @media (max-width:767px){
+            main{padding-bottom:calc(6.4rem + var(--safe-bottom))!important;scroll-padding-bottom:7rem}
+            .mobile-bottom-nav{min-height:4.9rem;padding-bottom:calc(.55rem + var(--safe-bottom))}
+            #practice-area{padding:1rem!important}
+            .practice-question-nav{position:sticky;bottom:calc(5.25rem + var(--safe-bottom));z-index:25;margin:0 -.25rem;padding:.7rem .25rem .55rem;background:linear-gradient(to bottom,rgba(30,41,59,0),rgba(30,41,59,.98) 30%)}
+            #practice-prev-btn,#practice-next-btn{min-height:52px}
+        }
+        @media (min-width:768px){.practice-question-nav{position:sticky;bottom:.5rem;z-index:15;background:linear-gradient(to bottom,rgba(30,41,59,0),rgba(30,41,59,.97) 30%)}}
+    </style>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+
+<style id="mobile-practice-focus-style">
+@media (max-width: 767px) {
+  html, body { height: 100%; overflow-x: hidden; }
+  body { overscroll-behavior-x: none; }
+
+  /* Practice mode on phones is a self-contained viewport. */
+  #tab-practice {
+    height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    min-height: calc(100dvh - var(--mobile-nav-height) - var(--safe-bottom));
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+
+  #tab-practice > .max-w-4xl {
+    height: 100%;
+    max-width: none;
+    padding: .4rem .7rem .25rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #tab-practice .practice-top-controls { flex: 0 0 auto; }
+  #tab-practice .practice-top-controls select { min-height: 38px; }
+
+  #practice-question-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-top: .35rem;
+  }
+
+  /* Question and choices are the main touch area. */
+  #practice-question-container .question-text,
+  #practice-question-container [data-question-text] {
+    max-height: 30vh;
+    overflow-y: auto;
+  }
+
+  #practice-question-container .question-options {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #practice-question-container .question-option {
+    min-height: 0 !important;
+    padding: .65rem .7rem !important;
+  }
+
+  /* Navigation stays inside the visible practice screen. */
+  #practice-question-nav,
+  .practice-question-nav {
+    position: static !important;
+    flex: 0 0 auto;
+    bottom: auto !important;
+    margin-top: .3rem !important;
+    padding: .25rem 0 calc(.15rem + var(--safe-bottom)) !important;
+    background: none !important;
+    z-index: 20;
+  }
+
+  #practice-prev-btn,
+  #practice-next-btn {
+    min-height: 48px !important;
+    height: 48px;
+  }
+}
+</style>
+
+</head>
+<body class="min-h-screen flex flex-col md:flex-row bg-slate-900 text-slate-100">
+
+    <!-- サイドバーナビゲーション (PC) -->
+    <aside class="w-full md:w-64 md:min-h-screen bg-slate-950 border-r border-slate-800 flex-shrink-0 flex flex-col justify-between z-20 md:sticky md:top-0">
+        <div>
+            <div class="p-5 border-b border-slate-800 flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">
+                    &#127891;
+                </div>
+                <div>
+                    <h1 class="font-black text-base tracking-tight text-white leading-tight">Web技能検定3級</h1>
+                    <p class="text-[11px] font-medium text-slate-400">学科対策マスター 100問完全版</p>
+                </div>
+            </div>
+
+            <nav class="p-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-blue-400 bg-blue-950/60 border border-blue-800/50">
+                    <span>&#128202;</span> ダッシュボード
+                </button>
+                <button onclick="switchTab('practice')" id="nav-practice" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <span>&#128218;</span> 分野別問題集 (100問)
+                </button>
+                <button onclick="switchTab('exam')" id="nav-exam" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <span>&#9201;</span> 模擬試験（25問抽出）
+                </button>
+                <button onclick="switchTab('weak')" id="nav-weak" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"><span>&#9888;</span> 苦手問題 <span id="weak-nav-badge" class="ml-auto hidden text-[10px] bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full">0</span></button>
+                <button onclick="switchTab('bookmarks')" id="nav-bookmarks" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <span>&#128209;</span> ブックマークノート
+                </button>
+                <button onclick="switchTab('flashcards')" id="nav-flashcards" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <span>&#128214;</span> 単語帳（重要用語）
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <span>&#9881;</span> データ管理
+                </button>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-800/80 text-xs text-slate-500 hidden md:block">
+            <p class="font-medium">Webデザイン技能検定3級学科対策</p>
+            <p class="text-[10px] text-slate-600 mt-0.5">JIS X 8341-3 / HTML5 / CSS3 対応</p>
+        </div>
+    </aside>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-4 md:p-8 overflow-y-auto custom-scrollbar safe-bottom md:pb-8">
+
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 border border-blue-700/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl">
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-xs font-bold">
+                        &#10024; 過去問・直近出題 100問完全網羅
+                    </span>
+                    <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight leading-snug">Webデザイン技能士3級<br class="hidden sm:inline"> 一発合格を目指す学科対策アプリ</h2>
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                        最新の傾向に対応した全100問の豊富な問題データベースを搭載。分野別学習や実戦的な模擬試験で、短期間での完全攻略をサポートします。
+                    </p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="switchTab('practice')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/30 text-sm flex items-center gap-2">
+                            &#9654; 問題演習をはじめる
+                        </button>
+                        <button onclick="switchTab('exam')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold px-5 py-2.5 rounded-xl transition text-sm flex items-center gap-2">
+                            &#9201; 模擬試験（45分/25問抽出）
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 shadow-sm">
+                    <div class="text-slate-400 text-xs font-medium mb-1 flex items-center justify-between">
+                        <span>総解答数</span><span>&#128221;</span>
+                    </div>
+                    <div id="stat-total-answered" class="text-2xl md:text-3xl font-black text-white">0</div>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 shadow-sm">
+                    <div class="text-slate-400 text-xs font-medium mb-1 flex items-center justify-between">
+                        <span>平均正答率</span><span>&#127919;</span>
+                    </div>
+                    <div id="stat-accuracy" class="text-2xl md:text-3xl font-black text-emerald-400">0%</div>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 shadow-sm">
+                    <div class="text-slate-400 text-xs font-medium mb-1 flex items-center justify-between">
+                        <span>模試最高得点</span><span>&#127942;</span>
+                    </div>
+                    <div id="stat-exam-high" class="text-2xl md:text-3xl font-black text-amber-400">未受験</div>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 shadow-sm">
+                    <div class="text-slate-400 text-xs font-medium mb-1 flex items-center justify-between">
+                        <span>保存した問題</span><span>&#128278;</span>
+                    </div>
+                    <div id="stat-bookmarks-count" class="text-2xl md:text-3xl font-black text-purple-400">0</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/60 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">&#128200; 分野別トレーニング</h3>
+                <div id="category-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- PRACTICE TAB -->
+        <section id="tab-practice" class="tab-content hidden space-y-6">
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white">分野別問題集（全100問）</h2>
+                    <p class="text-xs text-slate-400">特定分野の集中強化や、苦手問題の復習を行えます。</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <select id="practice-category-select" class="w-full sm:w-auto bg-slate-900 border border-slate-700 rounded-xl text-sm p-3 font-semibold text-slate-200">
+                        <option value="ALL">すべての分野（全100問ランダム）</option>
+                        <option value="WEB_BASIC">Webの基礎・インターネット概論</option>
+                        <option value="HTML_CSS">HTML5 / CSS3 仕様</option>
+                        <option value="ACCESSIBILITY">ウェブアクセシビリティ (JIS X 8341-3)</option>
+                        <option value="SECURITY">セキュリティ & ネットワーク</option>
+                        <option value="LEGAL">著作権・関連法規・規約</option>
+                        <option value="COLOR_DESIGN">カラーコーディネート・UIデザイン</option>
+                        <option value="PRACTICAL">実技試験・作業の基礎知識</option>
+                    </select>
+                    <button onclick="startPracticeSession()" class="tap-target bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2.5 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                        &#128260; シャッフル
+                    </button>
+                </div>
+            </div>
+
+            <div id="practice-area" class="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+                <div class="flex items-center justify-between gap-3">
+                    <span id="practice-mode-label" class="text-[11px] font-black uppercase text-slate-500">通常演習</span>
+                    <span id="practice-session-score" class="text-[11px] font-bold text-slate-500">今回の正答率: --</span>
+                    <label class="inline-flex items-center gap-2 text-[11px] font-bold text-slate-400 bg-slate-900/70 border border-slate-700 rounded-xl px-3 py-2">
+                        <input id="practice-auto-next-toggle" type="checkbox" checked class="accent-blue-500 w-4 h-4">
+                        <span>回答後に自動で次へ</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-between pb-4 border-b border-slate-700/80">
+                    <span id="practice-category-badge" class="px-3 py-1 bg-blue-950 text-blue-300 border border-blue-800/50 font-bold text-xs rounded-full">カテゴリ</span>
+                    <div class="flex items-center gap-3">
+                        <button id="practice-bookmark-btn" onclick="toggleBookmarkCurrentPractice()" class="text-slate-400 hover:text-amber-400 transition flex items-center gap-1 text-xs font-semibold">
+                            &#128278; ブックマーク保存
+                        </button>
+                        <span id="practice-progress-text" class="text-xs font-bold text-slate-400">問題 1 / --</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <span id="practice-type-tag" class="text-[11px] font-black text-blue-400 uppercase tracking-wider">択一形式</span>
+                    <h3 id="practice-question-text" class="text-lg md:text-xl font-bold text-slate-100 leading-relaxed">問題文を読み込んでいます...</h3>
+                </div>
+
+                <div id="practice-options" class="space-y-3"></div>
+                <div id="practice-explanation" class="hidden rounded-xl p-5 border transition-all"></div>
+
+                <div class="practice-question-nav grid grid-cols-2 gap-3 pt-4 border-t border-slate-700/80">
+                    <button id="practice-prev-btn" onclick="prevPracticeQuestion()" class="tap-target w-full px-3 py-3 border border-slate-700 text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-700/50 transition flex items-center justify-center gap-1">
+                        &#9664; 前の問題
+                    </button>
+                    <button id="practice-next-btn" onclick="nextPracticeQuestion()" class="tap-target w-full px-3 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 shadow-lg shadow-blue-600/20">
+                        次の問題 &#9654;
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXAM TAB -->
+        <section id="tab-exam" class="tab-content hidden space-y-6">
+            <div id="exam-intro" class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl max-w-2xl mx-auto text-center space-y-6">
+                <div class="w-16 h-16 bg-blue-950 text-blue-400 border border-blue-800/50 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">&#9201;</div>
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-black text-white">Webデザイン技能検定3級 模擬試験</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        100問のデータベースから本番同様に「25問」をランダム抽出します。<br>
+                        制限時間45分・正答率70%（18問以上）で合格となります。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 py-4 border-y border-slate-700/80 max-w-md mx-auto">
+                    <div><div class="text-xs text-slate-400 font-medium">出題数</div><div class="text-lg font-black text-white">25問</div></div>
+                    <div><div class="text-xs text-slate-400 font-medium">制限時間</div><div class="text-lg font-black text-white">45分</div></div>
+                    <div><div class="text-xs text-slate-400 font-medium">合格基準</div><div class="text-lg font-black text-emerald-400">70%以上</div></div>
+                </div>
+
+                <button onclick="startExam()" class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl transition shadow-xl shadow-blue-600/30 text-base">
+                    模擬試験を開始する
+                </button>
+            </div>
+
+            <div id="exam-active" class="hidden space-y-6">
+                <div class="bg-slate-950 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-md sticky top-0 z-10 space-y-2">
+                    <div class="progress-track">
+                        <div id="exam-progress-bar" class="progress-fill bg-blue-500" style="width:4%"></div>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="px-3 py-1 bg-blue-950 text-blue-300 font-bold text-xs rounded-lg border border-blue-800">模擬試験実施中</span>
+                        <div class="text-amber-400 font-mono font-bold text-lg bg-amber-950/40 border border-amber-800/40 px-3 py-1 rounded-xl">
+                            &#9201; <span id="exam-timer">45:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+                    <div class="text-xs text-slate-400 font-semibold" id="exam-progress-indicator">問題 1 / 25</div>
+                    <h3 id="exam-question-text" class="text-lg md:text-xl font-bold text-slate-100 leading-relaxed">---</h3>
+                    <div id="exam-options" class="space-y-3"></div>
+
+                    <div class="flex justify-between items-center gap-3 pt-6 border-t border-slate-700/80">
+                        <button id="exam-prev-btn" onclick="navigateExamQuestion(-1)" class="tap-target px-4 py-2 border border-slate-700 text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-700/50">&#9664; 前へ</button>
+                        <button id="exam-next-btn" onclick="handleExamNext()" class="tap-target px-5 py-2 bg-slate-700 text-white rounded-xl font-semibold text-sm hover:bg-slate-600 min-w-[150px]">次へ &#9654;</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60 space-y-2">
+                    <div class="text-xs font-bold text-white">問題ナビゲーション</div>
+                    <div id="exam-question-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2"></div>
+                </div>
+
+                <div class="flex items-center justify-between bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60">
+                    <span id="exam-answered-summary" class="text-xs font-semibold text-slate-400">回答済み: 0 / 25 問</span>
+                    <button id="exam-bottom-finish-btn" onclick="finishExamPrompt()" class="tap-target bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg text-sm">
+                        &#9989; 採点する
+                    </button>
+                </div>
+            </div>
+
+            <div id="exam-result" class="hidden space-y-6">
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl text-center max-w-2xl mx-auto space-y-4">
+                    <div id="exam-badge" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl bg-slate-900 border border-slate-700">&#128202;</div>
+                    <h2 id="exam-status-title" class="text-2xl font-black text-white">採点結果</h2>
+                    <p id="exam-status-subtitle" class="text-slate-400 text-sm">お疲れ様でした！</p>
+
+                    <div class="p-6 bg-slate-900/80 rounded-2xl border border-slate-700 grid grid-cols-2 gap-4 max-w-sm mx-auto my-4">
+                        <div>
+                            <div class="text-xs text-slate-400 font-medium">正解数</div>
+                            <div id="exam-score-text" class="text-3xl font-black text-white">0 / 25</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 font-medium">正答率</div>
+                            <div id="exam-accuracy-text" class="text-3xl font-black text-blue-400">0%</div>
+                        </div>
+                    </div>
+
+                    <div id="exam-result-message" class="hidden p-3 rounded-xl border text-sm text-left"></div>
+                    <div id="exam-category-result" class="text-left bg-slate-950/60 border border-slate-700 rounded-2xl p-4 space-y-3"></div>
+
+                    <div class="flex flex-wrap justify-center gap-3 pt-2">
+                        <button onclick="startExam()" class="tap-target px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm">もう一度挑戦</button>
+                        <button onclick="switchTab('dashboard')" class="px-5 py-2.5 border border-slate-700 text-slate-300 font-bold rounded-xl hover:bg-slate-700/50 text-sm">ダッシュボードへ</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-xl space-y-4">
+                    <h3 class="font-bold text-lg text-white flex items-center gap-2">&#128221; 解答結果の確認・全問解説</h3>
+                    <div id="exam-review-list" class="space-y-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOOKMARKS TAB -->
+        <section id="tab-bookmarks" class="tab-content hidden space-y-6">
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-white">ブックマークノート</h2>
+                    <p class="text-xs text-slate-400">保存した重要・苦手問題のリストです。</p>
+                </div>
+                <span id="bookmark-badge-count" class="bg-purple-950 border border-purple-800 text-purple-300 text-xs font-bold px-3 py-1 rounded-full">0 件</span>
+            </div>
+            <div id="bookmarks-list-container" class="space-y-4"></div>
+        </section>
+
+        <!-- FLASHCARDS TAB -->
+        <section id="tab-flashcards" class="tab-content hidden space-y-6">
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-white">重要用語単語帳 (40選)</h2>
+                    <p class="text-xs text-slate-400">カードをタップで裏返します。「暗記済み」を押すと出題から外れます。</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetMasteredCards()" class="text-xs text-slate-400 hover:text-white underline">暗記済をリセット</button>
+                    <div class="text-xs font-bold text-blue-400 bg-blue-950 border border-blue-800/60 px-3 py-1.5 rounded-xl" id="flashcard-counter">1 / --</div>
+                </div>
+            </div>
+
+            <div id="flashcard-container" class="max-w-md mx-auto perspective-1000 my-8">
+                <div id="flashcard" onclick="handleFlashcardClick(event)" class="flashcard-swipe w-full h-80 rounded-2xl cursor-pointer relative transform-style-3d transition-transform duration-500 shadow-2xl border border-slate-700 bg-slate-800">
+                    <div class="absolute inset-0 backface-hidden p-8 flex flex-col justify-between items-center text-center">
+                        <span id="card-tag" class="px-3 py-1 bg-slate-700/60 text-slate-300 border border-slate-600 rounded-full text-xs font-bold">カテゴリ</span>
+                        <div class="space-y-2">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">用語 / 規格名</p>
+                            <h3 id="card-term" class="text-2xl font-black text-white">---</h3>
+                        </div>
+                        <p class="text-xs text-blue-400 font-semibold flex items-center gap-1">&#128161; クリックで解説表示</p>
+                    </div>
+                    <div class="absolute inset-0 backface-hidden rotate-y-180 p-8 flex flex-col justify-between items-center text-center bg-gradient-to-b from-blue-950 to-slate-900 border border-blue-700/50 text-white rounded-2xl">
+                        <span class="px-3 py-1 bg-blue-900/60 text-blue-300 border border-blue-700/40 rounded-full text-xs font-bold">ポイント</span>
+                        <p id="card-definition" class="text-sm md:text-base text-slate-200 leading-relaxed font-medium">---</p>
+                        <p class="text-xs text-slate-400">タップで戻る</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="flashcard-controls" class="flex justify-center items-center gap-4 max-w-xs mx-auto">
+                <button onclick="prevCard()" class="tap-target p-3 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 text-slate-200">&#9664;</button>
+                <button id="card-toggle-master" onclick="toggleCardMastered()" class="flex-1 py-3 bg-emerald-700 hover:bg-emerald-600 border border-emerald-600 text-white font-bold rounded-xl text-sm shadow-md transition">&#9989; 暗記済みにする</button>
+                <button onclick="nextCard()" class="tap-target p-3 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 text-slate-200">&#9654;</button>
+            </div>
+        </section>
+
+        <section id="tab-weak" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-900 p-5 md:p-7 rounded-2xl border border-rose-900/60">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div><span class="text-[11px] font-black text-rose-300">WEAK POINT TRAINING</span>
+                    <h2 class="text-xl md:text-2xl font-black text-white mt-1">苦手問題対策</h2>
+                    <p class="text-xs md:text-sm text-slate-400 mt-2">間違えた問題を自動保存し、苦手分野の傾向を確認できます。</p></div>
+                    <button onclick="startWeakPractice()" id="weak-start-btn" class="tap-target px-5 py-3 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl text-sm">▶ 苦手問題に挑戦</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><div class="text-[11px] text-slate-400">苦手問題</div><div id="weak-total-count" class="text-2xl font-black text-rose-300 mt-1">0</div></div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><div class="text-[11px] text-slate-400">苦手分野</div><div id="weak-category-count" class="text-2xl font-black text-amber-300 mt-1">0</div></div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 col-span-2 md:col-span-1"><div class="text-[11px] text-slate-400">学習サイクル</div><div class="text-sm font-bold text-slate-200 mt-1">間違える → 復習 → 再挑戦</div></div>
+            </div>
+            <div class="bg-slate-800/70 p-5 rounded-2xl border border-slate-700"><h3 class="font-bold text-white mb-4">📊 苦手分野の傾向</h3><div id="weak-category-summary" class="space-y-3"></div></div>
+            <div id="weak-list" class="space-y-4"></div>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section id="tab-settings" class="tab-content hidden space-y-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
+                <h2 class="text-xl font-bold text-white">データ管理・バックアップ</h2>
+                <p class="text-xs text-slate-400">学習進捗やブックマークの保存・復元・初期化を行えます。</p>
+
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button onclick="exportUserData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm">データ出力(バックアップ)</button>
+                    <label class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl text-sm cursor-pointer">
+                        データ復元
+                        <input type="file" accept=".json" onchange="importUserData(event)" class="hidden">
+                    </label>
+                    <button onclick="resetUserData()" class="px-4 py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl text-sm">学習データ完全リセット</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- モバイルボトムナビゲーション -->
+    <div class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur border-t border-slate-800 pt-2.5 px-2 flex justify-around items-center z-30 shadow-2xl">
+        <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center text-blue-400"><span class="text-lg">&#128202;</span><span class="text-[10px] font-bold mt-1">ホーム</span></button>
+        <button onclick="switchTab('practice')" id="mobile-nav-practice" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128218;</span><span class="text-[10px] font-bold mt-1">問題集</span></button>
+        <button onclick="switchTab('exam')" id="mobile-nav-exam" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9201;</span><span class="text-[10px] font-bold mt-1">模試</span></button>
+        <button onclick="switchTab('weak')" id="mobile-nav-weak" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9888;</span><span class="text-[10px] font-bold mt-1">苦手</span></button>
+        <button onclick="switchTab('bookmarks')" id="mobile-nav-bookmarks" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128209;</span><span class="text-[10px] font-bold mt-1">保存</span></button>
+        <button onclick="switchTab('flashcards')" id="mobile-nav-flashcards" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128214;</span><span class="text-[10px] font-bold mt-1">単語帳</span></button>
+        <button onclick="switchTab('settings')" id="mobile-nav-settings" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9881;</span><span class="text-[10px] font-bold mt-1">設定</span></button>
+    </div>
+
+    <script>
+        const CATEGORIES = {
+            WEB_BASIC: "Webの基礎・インターネット",
+            HTML_CSS: "HTML5 / CSS3 仕様",
+            ACCESSIBILITY: "アクセシビリティ (JIS X 8341-3)",
+            SECURITY: "セキュリティ & ネットワーク",
+            LEGAL: "著作権・関連法規",
+            COLOR_DESIGN: "カラー・UIデザイン",
+            PRACTICAL: "実技試験・作業の基礎知識"
+        };
+
+        // --- 全100問データベース ---
+        const QUESTIONS = [
+            // HTML / CSS (20問)
+            { id: 1, category: "HTML_CSS", type: "tf", question: "HTML5において、<article> 要素はニュース記事やブログ投稿など独立したコンテンツを表す。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。article要素は文書内の独立した完結したセクションを表します。" },
+            { id: 2, category: "HTML_CSS", type: "choice", question: "CSSのボックスモデルで、ボーダー（境界線）の『内側』の余白を指定するプロパティはどれか。", options: ["padding", "margin", "spacing", "border-spacing"], correct: 0, explanation: "ボーダーの内側余白はpadding、外側はmarginです。" },
+            { id: 3, category: "HTML_CSS", type: "choice", question: "HTMLで順序のあるリスト（番号付き）を作成するタグはどれか。", options: ["<ul>", "<ol>", "<li>", "<dl>"], correct: 1, explanation: "順序付きリストは <ol> (Ordered List) です。" },
+            { id: 4, category: "HTML_CSS", type: "choice", question: "CSSでルート要素（htmlタグ）の文字サイズを基準とする相対単位はどれか。", options: ["px", "em", "rem", "%"], correct: 2, explanation: "rem (root em) はルート要素のフォントサイズを基準にします。" },
+            { id: 5, category: "HTML_CSS", type: "tf", question: "HTML5において、<header> 要素は1つのページ内に1つしか配置できない。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。<header>要素はarticleやsection内にも複数配置できます。" },
+            { id: 6, category: "HTML_CSS", type: "choice", question: "CSSで複数のセレクタに同一のスタイルを適用する際の区切り文字はどれか。", options: ["カンマ ( , )", "ピリオド ( . )", "コロン ( : )", "セミコロン ( ; )"], correct: 0, explanation: "複数のセレクタをカンマで区切ると、同じスタイルを適用できます。" },
+            { id: 7, category: "HTML_CSS", type: "choice", question: "HTML5で定義されている、主要なナビゲーションリンクのグループを表す要素はどれか。", options: ["<menu>", "<nav>", "<aside>", "<section>"], correct: 1, explanation: "主要なナビゲーションセクションを示すには <nav> を使用します。" },
+            { id: 8, category: "HTML_CSS", type: "choice", question: "CSSで要素を非表示にし、レイアウト上の領域も詰めさせるプロパティはどれか。", options: ["visibility: hidden;", "display: none;", "opacity: 0;", "position: absolute;"], correct: 1, explanation: "display: none; は要素を消去し空間も詰めさせます。" },
+            { id: 9, category: "HTML_CSS", type: "tf", question: "HTML5では <b> や <i> タグは完全に廃止され、使用すると構文エラーになる。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。セマンティクスが再定義され現在も使用可能です。" },
+            { id: 10, category: "HTML_CSS", type: "choice", question: "CSSのフレックスボックス（Flexbox）で、子要素を横方向の中央に配置するプロパティはどれか。", options: ["align-items: center;", "justify-content: center;", "text-align: center;", "flex-direction: center;"], correct: 1, explanation: "主軸（既定は横方向）の揃えは justify-content で指定します。" },
+            { id: 11, category: "HTML_CSS", type: "choice", question: "HTMLのフォームで、単一選択のラジオボタン群をグループ化するために共通化する属性はどれか。", options: ["id", "class", "name", "value"], correct: 2, explanation: "同一の name 属性を設定することで排他選択のグループになります。" },
+            { id: 12, category: "HTML_CSS", type: "choice", question: "CSSでフォントを太字にする際に指定するプロパティはどれか。", options: ["font-style", "font-weight", "font-variant", "font-size"], correct: 1, explanation: "font-weight: bold; などで太さを指定します。" },
+            { id: 13, category: "HTML_CSS", type: "tf", question: "HTMLの <!DOCTYPE html> 宣言は、大文字・小文字を区別しない。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。DOCTYPE宣言は大文字小文字を区別しません。" },
+            { id: 14, category: "HTML_CSS", type: "choice", question: "CSSで背景画像を繰り返さずに1枚だけ表示する指定はどれか。", options: ["background-repeat: no-repeat;", "background-style: single;", "background-fit: contain;", "background-once: true;"], correct: 0, explanation: "background-repeat: no-repeat; を使用します。" },
+            { id: 15, category: "HTML_CSS", type: "choice", question: "HTMLで他のページやWebサイトへリンクを貼るために使用する属性はどれか。", options: ["src", "href", "link", "action"], correct: 1, explanation: "<a> タグの href 属性にリンク先URLを指定します。" },
+            { id: 16, category: "HTML_CSS", type: "choice", question: "CSSの z-index プロパティが機能するための条件として正しいものはどれか。", options: ["positionプロパティがstatic以外であること", "displayがblockであること", "floatが指定されていること", "widthとheightが指定されていること"], correct: 0, explanation: "z-index は position が relative, absolute, fixed, sticky の要素に機能します。" },
+            { id: 17, category: "HTML_CSS", type: "tf", question: "CSSセレクタで `#title` は class=\"title\" の要素にマッチする。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。`#` は id 属性にマッチします。class 属性には `.` を使用します。" },
+            { id: 18, category: "HTML_CSS", type: "choice", question: "HTMLの表（table）で、見出しセルを表すタグはどれか。", options: ["<td>", "<th>", "<tr>", "<thead>"], correct: 1, explanation: "<th> (Table Header) を使用します。" },
+            { id: 19, category: "HTML_CSS", type: "choice", question: "CSSでテキストの下線を消す指定として正しいものはどれか。", options: ["text-decoration: none;", "text-style: none;", "font-style: plain;", "border-bottom: none;"], correct: 0, explanation: "text-decoration: none; でリンク等の下線を消去できます。" },
+            { id: 20, category: "HTML_CSS", type: "tf", question: "HTML5で定義された <figure> 要素は、図表や写真とそのキャプションをグループ化する。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。figcaption要素と組み合わせて図表グループを形成します。" },
+
+            // ACCESSIBILITY (15問)
+            { id: 21, category: "ACCESSIBILITY", type: "choice", question: "JIS X 8341-3（Webアクセシビリティ規格）において、色覚特性に配慮した設計として正しいものはどれか。", options: ["テキストラベルや形状のアイコンを併用する", "サイト内を白黒のみにする", "背景色に濃い青だけを使う", "リンクの下線を非表示にする"], correct: 0, explanation: "色だけに頼らず、形状や文字情報を併用することが規定されています。" },
+            { id: 22, category: "ACCESSIBILITY", type: "tf", question: "JIS X 8341-3において、装飾目的の画像には空のalt属性（alt=\"\"）を設定する。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。空のaltを指定すると音声読み上げソフトが不要な読み上げをスキップします。" },
+            { id: 23, category: "ACCESSIBILITY", type: "tf", question: "キーボード操作時の見栄えを良くするため、CSSで outline: none を指定してフォーカス枠を消去することが推奨されている。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。フォーカス枠を完全に消すとキーボード操作者が現在位置を見失うため非推奨です。" },
+            { id: 24, category: "ACCESSIBILITY", type: "choice", question: "JIS X 8341-3 で定められているアクセシビリティ適合レベルの表記として正しいものはどれか。", options: ["レベル1, 2, 3", "レベルA, AA, AAA", "ブロンズ, シルバー, ゴールド", "初級, 中級, 上級"], correct: 1, explanation: "適合レベルは「A」「AA」「AAA」の3段階です。" },
+            { id: 25, category: "ACCESSIBILITY", type: "choice", question: "JIS X 8341-3のコントラスト比に関するガイドライン（レベルAA）で、通常テキストに求められる最小コントラスト比はどれか。", options: ["2:1", "3:1", "4.5:1", "7:1"], correct: 2, explanation: "レベルAAでは通常テキストで「4.5:1以上」、大きなテキストで「3:1以上」が求められます。" },
+            { id: 26, category: "ACCESSIBILITY", type: "choice", question: "音声読み上げブラウザ（スクリーンリーダー）の利用者に配慮したHTMLの記述として不適切なものはどれか。", options: ["見出しタグ(h1?h6)を論理的な階層順で使用する", "「ここをクリック」のような単体で意味の通らないリンクテキストを使用する", "フォームの入力欄にlabel要素を紐付ける", "ページの言語をhtml要素のlang属性で明示する"], correct: 1, explanation: "文脈のない「ここをクリック」等は避け、リンク先の明確なテキストにします。" },
+            { id: 27, category: "ACCESSIBILITY", type: "tf", question: "Webアクセシビリティは障害者や高齢者だけを対象としたものであり、健常者の利便性には関係しない。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。一時的な怪我や暗い場所での閲覧など、あらゆるユーザーの利便性向上につながります。" },
+            { id: 28, category: "ACCESSIBILITY", type: "choice", question: "自動的に切り替わるカルーセル（画像スライド）でアクセシビリティ上最も重要な機能はどれか。", options: ["自動再生を一時停止・停止できるボタンを設ける", "切り替え速度を1秒以下にする", "ループ再生を永久に続ける", "画像に影効果をつける"], correct: 0, explanation: "動きのあるコンテンツにはユーザーが一時停止・停止できる手段が必要です。" },
+            { id: 29, category: "ACCESSIBILITY", type: "tf", question: "Webページ内に1秒間に3回以上明滅・点滅するコンテンツを配置すると、光過敏性発作を引き起こす危険性がある。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。3回/秒を超える光の点滅は光誘発性てんかん等のリスクとなります。" },
+            { id: 30, category: "ACCESSIBILITY", type: "choice", question: "HTML要素の意味や役割（ロール）を補正し、支援技術へ伝えるためのWCAG標準仕様はどれか。", options: ["WAI-ARIA", "PWA", "SVG", "WebGL"], correct: 0, explanation: "WAI-ARIA (Accessible Rich Internet Applications) を使用します。" },
+            { id: 31, category: "ACCESSIBILITY", type: "choice", question: "ページ上部のナビゲーションを飛ばして本文へ直接移動できるように設けるリンクの名称はどれか。", options: ["スキップリンク", "アンカーリンク", "ディープリンク", "バックリンク"], correct: 0, explanation: "キーボードや音声操作者のために「本文へスキップ」リンクを設置します。" },
+            { id: 32, category: "ACCESSIBILITY", type: "tf", question: "画像にテキストが含まれている場合、その文字情報をalt属性にも同様に含める必要がある。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。画像内の文字情報は代替テキストとして提供する必要があります。" },
+            { id: 33, category: "ACCESSIBILITY", type: "choice", question: "JIS X 8341-3の元となっている、W3Cが策定した国際的なWebアクセシビリティガイドラインの略称はどれか。", options: ["WCAG", "WHATWG", "HTTP", "ANSI"], correct: 0, explanation: "WCAG (Web Content Accessibility Guidelines) が基になっています。" },
+            { id: 34, category: "ACCESSIBILITY", type: "choice", question: "動画コンテンツにおけるアクセシビリティ対応として不適切なものはどれか。", options: ["音声に対するキャプション（字幕）を提供する", "音声解説（オーディオデスクリプション）を提供する", "動画の自動再生を音声付きで開始させる", "トランスクリプト（書き起こしテキスト）を提供する"], correct: 2, explanation: "音声付き動画の自動再生はスクリーンリーダーの音声を遮るため不適切です。" },
+            { id: 35, category: "ACCESSIBILITY", type: "tf", question: "フォームの必須入力項目を示す際、赤色をつけるだけでなく「(必須)」というテキストも併記することが推奨される。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。色覚特性や音声読み上げに配慮しテキスト表現を併用します。" },
+
+            // SECURITY (15問)
+            { id: 36, category: "SECURITY", type: "choice", question: "暗号化通信プロトコル「HTTPS」に関する記述として適切なものはどれか。", options: ["TCP 80番ポートを使う", "SSL/TLSで通信を暗号化する", "画像を全自動軽量化する", "ドメイン所有権を保証する"], correct: 1, explanation: "HTTPSはHTTP通信をSSL/TLSによって暗号化・保護します（標準ポート: 443）。" },
+            { id: 37, category: "SECURITY", type: "choice", question: "実在の銀行等を装った偽メールで偽サイトへ誘導し、情報を騙し取る手法はどれか。", options: ["フィッシング", "ブルートフォース攻撃", "DoS攻撃", "クロスサイトスクリプティング"], correct: 0, explanation: "偽サイトへ誘導して個人情報を奪う行為を「フィッシング」と呼びます。" },
+            { id: 38, category: "SECURITY", type: "choice", question: "入力欄に不正なSQL文を入力し、データベースを不正操作する攻撃はどれか。", options: ["SQLインジェクション", "DNSキャッシュポイズニング", "セッションハイジャック", "ゼロデイ攻撃"], correct: 0, explanation: "データベース操作言語を注入して改ざん等を行う攻撃です。" },
+            { id: 39, category: "SECURITY", type: "tf", question: "パスワード設定時、英大小文字・数字・記号を混ぜ長くするほどブルートフォース攻撃に強い。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。文字種と桁数を増やすことで総当たり攻撃の難易度が大幅に上がります。" },
+            { id: 40, category: "SECURITY", type: "choice", question: "Webアプリケーションの脆弱性を突いて悪意あるスクリプトを注入し、ユーザーのブラウザ上で実行させる攻撃はどれか。", options: ["XSS (クロスサイトスクリプティング)", "CSRF", "DDoS攻撃", "マルウェア"], correct: 0, explanation: "XSSはスクリプトを埋め込んでクッキーの奪取などを行う攻撃です。" },
+            { id: 41, category: "SECURITY", type: "choice", question: "ユーザーが意図しないリクエストを発行させられ、掲示板への悪質書き込みや送金等を実行させられる攻撃はどれか。", options: ["CSRF (クロスサイトリクエストフォージェリ)", "XSS", "ポートスキャン", "フィッシング"], correct: 0, explanation: "CSRFは認証済みユーザーのセッションを悪用して意図しない操作を行わせます。" },
+            { id: 42, category: "SECURITY", type: "tf", question: "「常時SSL (Always On SSL)」とは、お問い合わせフォーム等の特定ページのみを暗号化する手法である。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。常時SSLはウェブサイト全ページをHTTPS化（暗号化）することを指します。" },
+            { id: 43, category: "SECURITY", type: "choice", question: "公開鍵暗号方式において、送信者がデータを「暗号化」する際に使用する鍵はどれか。", options: ["受信者の公開鍵", "受信者の秘密鍵", "送信者の秘密鍵", "共通鍵"], correct: 0, explanation: "公開鍵暗号方式では、受信者の公開鍵で暗号化し、受信者本人の秘密鍵で復号します。" },
+            { id: 44, category: "SECURITY", type: "choice", question: "マルウェアや不正アクセスから内部ネットワークを保護するための防火壁（境界セキュリティ）はどれか。", options: ["ファイアウォール", "プロキシサーバ", "DNSサーバ", "ロードバランサ"], correct: 0, explanation: "ファイアウォール（Firewall）が通信の通過・遮断を制御します。" },
+            { id: 45, category: "SECURITY", type: "tf", question: "Webサーバの基本認証（Basic認証）は通信内容が暗号化されないため、盗聴のリスクがある。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。Basic認証のIDとパスワードはBase64で符号化されるだけで暗号化されません。" },
+            { id: 46, category: "SECURITY", type: "choice", question: "大量のコンピュータから一斉に特定のサーバへ過度な負荷をかけ、サービスを停止に追い込む攻撃はどれか。", options: ["DDoS攻撃", "ゼロデイ攻撃", "ソーシャルエンジニアリング", "スパイウェア"], correct: 0, explanation: "分散型のサービス不可攻撃をDDoS (Distributed Denial of Service) 攻撃と言います。" },
+            { id: 47, category: "SECURITY", type: "choice", question: "ソフトウェアの脆弱性が発見されてから、修正プログラムが提供される前に行われる攻撃を何と呼ぶか。", options: ["ゼロデイ攻撃", "ブルートフォース攻撃", "リスト型アカウントハック", "中間者攻撃"], correct: 0, explanation: "対策（パッチ）が存在しない「0日目」を狙うためゼロデイ攻撃と呼ばれます。" },
+            { id: 48, category: "SECURITY", type: "tf", question: "Cookieに `Secure` 属性を付与すると、HTTPS接続時のみCookieが送信されるようになる。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。Secure属性により盗聴のリスクを軽減できます。" },
+            { id: 49, category: "SECURITY", type: "choice", question: "人の心理的隙や人間の行動の不備を突いて秘密情報を入手する手法（肩越しに画面を見る等）の総称はどれか。", options: ["ソーシャルエンジニアリング", "サイバーテロ", "フィッシング", "スプーフィング"], correct: 0, explanation: "ショルダーハッキングやゴミ箱を漁る行為などもソーシャルエンジニアリングに含まれます。" },
+            { id: 50, category: "SECURITY", type: "choice", question: "WebブラウザとWebサーバ間でセッション状態を維持するために利用される識別データはどれか。", options: ["Cookie", "CSS", "DOM", "JSONP"], correct: 0, explanation: "Cookie等にセッションIDを保持させることで状態を識別します。" },
+
+            // LEGAL (15問)
+            { id: 51, category: "LEGAL", type: "tf", question: "他人の撮影した写真画像を個人の非営利ブログへ掲載する場合、許諾なく無断転載してよい。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。営利・非営利を問わず無断転載は著作権侵害となります。" },
+            { id: 52, category: "LEGAL", type: "choice", question: "自分の顔写真や姿を無断で撮影・公開されないよう守る法的権利はどれか。", options: ["肖像権", "パブリシティ権", "商標権", "意匠権"], correct: 0, explanation: "個人の姿や容姿を守る権利を肖像権と言います。" },
+            { id: 53, category: "LEGAL", type: "choice", question: "自社の商品やサービスを表すロゴ・ブランド名称を守る法律はどれか。", options: ["著作権法", "商標法", "個人情報保護法", "不正アクセス禁止法"], correct: 1, explanation: "ブランドやロゴマーク等を保護するのは商標法です。" },
+            { id: 54, category: "LEGAL", type: "tf", question: "日本において著作権は、作品を創作した時点で何らの手続きを必要とせず自然に発生する（無方式主義）。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。日本の著作権法は無方式主義を採用しています。" },
+            { id: 55, category: "LEGAL", type: "choice", question: "他人の著作物を「引用」する際の条件として不適切なものはどれか。", options: ["自分の著作物が「主」、引用部分が「従」であること", "引用部分をカギカッコ等で明確に区別すること", "出所（出典）を明記すること", "自分の好みに合わせて引用文の内容を自由に書き換えること"], correct: 3, explanation: "引用部分を勝手に改変（同一性保持権の侵害）してはいけません。" },
+            { id: 56, category: "LEGAL", type: "choice", question: "Webサイトのオープンソースライセンス「GPL」の主な特徴として正しいものはどれか。", options: ["改変・再配布したソフトウェアもGPLライセンスで公開しなければならない", "商用利用が一切禁止されている", "著作権表示をすべて削除しなければならない", "コードの公開義務が一切ない"], correct: 0, explanation: "GPLはコピーレフト性を持ち、二次的著作物にもGPLを適用させる必要があります。" },
+            { id: 57, category: "LEGAL", type: "tf", question: "プログラムのソースコードやHTMLコードは著作権法上の保護対象に含まれる。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。プログラムの著作物として保護されます。" },
+            { id: 58, category: "LEGAL", type: "choice", question: "個人情報保護法において「個人情報」に該当しないものはどれか。", options: ["氏名と結びついた生年月日", "特定の個人を識別できる顔写真データ", "完全に匿名化され復元不可能な統計データ", "メールアドレス（氏名が含まれるもの）"], correct: 2, explanation: "個人を完全に特定・復元できない統計データは個人情報に該当しません。" },
+            { id: 59, category: "LEGAL", type: "choice", question: "特定電子メール法（迷惑メール防止法）において規定されている送信方式はどれか。", options: ["オプトイン方式（事前に同意を得たユーザーにのみ送信）", "オプトアウト方式", "フリー送信方式", "ランダム送信方式"], correct: 0, explanation: "原則として事前に同意を得た者のみに送信が許可されるオプトイン方式です。" },
+            { id: 60, category: "LEGAL", type: "tf", question: "フリー素材サイトの写真であれば、規約を確認せずにあらゆる用途（商用利用や再配布）に利用してよい。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。素材サイトごとに規約（商用利用可否、クレジット表記等）があるため確認が必須です。" },
+            { id: 61, category: "LEGAL", type: "choice", question: "著作権の保護期間（原則）は、著作者の死後何年間か（日本において）。", options: ["30年", "50年", "70年", "100年"], correct: 2, explanation: "法改正により原則として「著作者の死後70年」となっています。" },
+            { id: 62, category: "LEGAL", type: "choice", question: "他人のIDやパスワードを無断で入力してアクセス制限されたサーバへ侵入する行為を処罰する法律はどれか。", options: ["不正アクセス禁止法", "電子署名法", "プロバイダ責任制限法", "サイバー基本法"], correct: 0, explanation: "不正アクセス行為の禁止等に関する法律（不正アクセス禁止法）です。" },
+            { id: 63, category: "LEGAL", type: "tf", question: "Webサイトの利用規約は、ユーザーが同意ボタンを押さなくても自動的に法的効力が発生する。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。ユーザーへの明示と同意（定型約款の合意要件）が必要です。" },
+            { id: 64, category: "LEGAL", type: "choice", question: "デザインの物品形状や模様、色彩などの創作を保護する法律はどれか。", options: ["意匠法", "特許法", "実用新案法", "著作権法"], correct: 0, explanation: "製品や画面UIなどの意匠（デザイン）を保護するのは意匠法です。" },
+            { id: 65, category: "LEGAL", type: "choice", question: "クリエイティブ・コモンズ・ライセンス（CCライセンス）のアイコンで「BY」が意味するものはどれか。", options: ["表示（原作者のクレジット表記）", "非営利", "改変禁止", "継承"], correct: 0, explanation: "BYは「表示（クレジット表記が必要）」を意味します。" },
+
+            // WEB BASIC (15問)
+            { id: 66, category: "WEB_BASIC", type: "choice", question: "ドメイン「example.co.jp」に含まれる「co」が表す組織区分はどれか。", options: ["政府機関", "高等教育機関", "日本国内の企業（営利法人）", "NPO法人"], correct: 2, explanation: "co.jp は日本国内の企業（株式会社等）に割り当てられます。" },
+            { id: 67, category: "WEB_BASIC", type: "choice", question: "HTTPステータスコード「404」が表す意味はどれか。", options: ["Internal Server Error", "Not Found", "Forbidden", "Moved Permanently"], correct: 1, explanation: "404 Not Found はページが存在しない状態を示します。" },
+            { id: 68, category: "WEB_BASIC", type: "choice", question: "Web標準技術（HTML/CSS規格等）の標準化を推進している国際非営利団体はどれか。", options: ["W3C", "ISO", "IEEE", "IETF"], correct: 0, explanation: "W3C (World Wide Web Consortium) が標準化を行っています。" },
+            { id: 69, category: "WEB_BASIC", type: "choice", question: "IPアドレスとドメイン名を相互に変換（名前解決）するシステムはどれか。", options: ["DNS", "DHCP", "FTP", "SMTP"], correct: 0, explanation: "DNS (Domain Name System) が名前解決を担います。" },
+            { id: 70, category: "WEB_BASIC", type: "tf", question: "IPv6で割り当てられるIPアドレスのビット長は128ビットである。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。IPv4は32ビット、IPv6は128ビットです。" },
+            { id: 71, category: "WEB_BASIC", type: "choice", question: "Webブラウザがサーバへデータを要求する際に送信するプロトコルコマンドはどれか。", options: ["HTTPリクエスト", "HTTPレスポンス", "DNSクエリ", "SSLハンドシェイク"], correct: 0, explanation: "クライアントからサーバへの要求をHTTPリクエストと言います。" },
+            { id: 72, category: "WEB_BASIC", type: "choice", question: "URL「https://www.example.com:8080/index.html」の「8080」が表すものはどれか。", options: ["ポート番号", "IPアドレス", "サブドメイン", "ホスト名"], correct: 0, explanation: "コロンに続く数値はポート番号を表します。" },
+            { id: 73, category: "WEB_BASIC", type: "tf", question: "Cookieはサーバ側だけに保存されるファイルであり、ブラウザ側には一切保存されない。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。Cookieはクライアント（ブラウザ）側に保存されます。" },
+            { id: 74, category: "WEB_BASIC", type: "choice", question: "Webページの表示速度を高速化するため、静的コンテンツを配信する分散ネットワーク技術はどれか。", options: ["CDN", "VPN", "LAN", "P2P"], correct: 0, explanation: "CDN (Content Delivery Network) がコンテンツを最適配信します。" },
+            { id: 75, category: "WEB_BASIC", type: "choice", question: "Webサーバからクライアントへデータ転送成功を示すHTTPステータスコードはどれか。", options: ["200 OK", "301 Moved Permanently", "403 Forbidden", "500 Internal Server Error"], correct: 0, explanation: "200 OK はリクエスト成功を示します。" },
+            { id: 76, category: "WEB_BASIC", type: "tf", question: "Webブラウザのキャッシュ機能は、一度読み込んだデータをローカルに保存して次回表示を速くする。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。キャッシュにより通信量削減と高速表示が可能になります。" },
+            { id: 77, category: "WEB_BASIC", type: "choice", question: "電子メールを受信するプロトコルのうち、サーバ上でメールを管理・同期するものはどれか。", options: ["IMAP", "POP3", "SMTP", "FTP"], correct: 0, explanation: "IMAPはサーバ上で管理・同期し、POP3は端末にダウンロードします。" },
+            { id: 78, category: "WEB_BASIC", type: "choice", question: "検索エンジンがWebサイト内を巡回して情報を収集するプログラムの名称はどれか。", options: ["クローラー（スパイダー）", "エンコーダー", "レンダラー", "コンパイラ"], correct: 0, explanation: "クローラーが自動巡回してインデックスを作成します。" },
+            { id: 79, category: "WEB_BASIC", type: "tf", question: "「CMS」とは「コンテンツ・マネジメント・システム」の略であり、WordPressなどが含まれる。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。専門知識がなくてもWebコンテンツを管理・更新できるシステムです。" },
+            { id: 80, category: "WEB_BASIC", type: "choice", question: "URL構造において「https://sub.example.com/」の「sub」にあたる部分の名称はどれか。", options: ["サブドメイン", "トップレベルドメイン", "パス", "プロトコル"], correct: 0, explanation: "ドメインの前に付加される文字をサブドメインと呼びます。" },
+
+            // COLOR & DESIGN (10問)
+            { id: 81, category: "COLOR_DESIGN", type: "choice", question: "色相環で正反対に位置する色同士の組み合わせを何と呼ぶか。", options: ["同系色", "補色", "類似色", "無彩色"], correct: 1, explanation: "反対位置の色を「補色」と呼び強い対比効果を生みます。" },
+            { id: 82, category: "COLOR_DESIGN", type: "choice", question: "ディスプレイ等の発光体で用いられる「光の三原色 (RGB)」の色の組み合わせはどれか。", options: ["Red, Green, Blue", "Red, Yellow, Blue", "Cyan, Magenta, Yellow", "Red, Green, Black"], correct: 0, explanation: "加法混色（光の三原色）は Red, Green, Blue です。" },
+            { id: 83, category: "COLOR_DESIGN", type: "choice", question: "印刷物で用いられる「色料の三原色 (CMY)」に黒を加えた表色系はどれか。", options: ["CMYK", "HSB", "RGB", "Lab"], correct: 0, explanation: "Cyan, Magenta, Yellow, Key tone (Black) のCMYKです。" },
+            { id: 84, category: "COLOR_DESIGN", type: "tf", question: "Webセーフカラーとは、OS環境に依存せず共通して再現できる216色のことである。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。216色がWebセーフカラーとして定められていました。" },
+            { id: 85, category: "COLOR_DESIGN", type: "choice", question: "色の三属性（色の3要素）の組み合わせとして正しいものはどれか。", options: ["色相・明度・彩度", "赤・緑・青", "色相・輝度・濃度", "明度・彩度・コントラスト"], correct: 0, explanation: "色は「色相（色味）」「明度（明るさ）」「彩度（鮮やかさ）」の3属性で表されます。" },
+            { id: 86, category: "COLOR_DESIGN", type: "choice", question: "文字（フォント）の文字間隔を調整する処理を何と呼ぶか。", options: ["カーニング", "トリミング", "パディング", "リサイズ"], correct: 0, explanation: "文字同士の間隔を美しく調整する作業をカーニングと言います。" },
+            { id: 87, category: "COLOR_DESIGN", type: "tf", question: "ユニバーサルデザインカラーとは、色覚の多様性に配慮し多くの人に正しく伝わるよう設計された配色である。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。色覚バリアフリーに配慮したデザイン設計です。" },
+            { id: 88, category: "COLOR_DESIGN", type: "choice", question: "画面設計において、ユーザーが目線を自然に動かすパターンの代表例（左上から右上、左下から右下）はどれか。", options: ["Zパターン（Fパターン）", "Oパターン", "Sパターン", "Xパターン"], correct: 0, explanation: "Web画面の視線誘導としてZ型やF型が知られています。" },
+            { id: 89, category: "COLOR_DESIGN", type: "choice", question: "デザインの基本原則「近接・整列・反復・コントラスト」の4原則を提唱した概念として正しいものはどれか。", options: ["デザインの4基本原則", "黄金比", "グリッドシステム", "マテリアルデザイン"], correct: 0, explanation: "ノンデザイナーズ・デザインブック等で有名なデザインの4基本原則です。" },
+            { id: 90, category: "COLOR_DESIGN", type: "tf", question: "トーン（色調）とは、「明度」と「彩度」を複合させた概念である。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。明度と彩度が近い色群をトーンと呼びます。" },
+
+            // PRACTICAL & WORKFLOW (10問)
+            { id: 91, category: "PRACTICAL", type: "choice", question: "可逆圧縮で背景透過（アルファチャンネル）に対応したWeb標準画像フォーマットはどれか。", options: ["JPEG", "PNG", "BMP", "TIFF"], correct: 1, explanation: "PNGは透過と可逆圧縮に対応する標準フォーマットです。" },
+            { id: 92, category: "PRACTICAL", type: "tf", question: "ワイヤーフレームとは制作初期段階で画面構成・レイアウトを可視化する設計図である。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。画面の要素配置を定義する設計書です。" },
+            { id: 93, category: "PRACTICAL", type: "choice", question: "CSSメディアクエリ `@media (max-width: 768px)` の意味として正しいものはどれか。", options: ["画面幅が768px以上", "画面幅が768px以下", "要素の高さを768px固定", "印刷時にのみ適用"], correct: 1, explanation: "最大幅768px（768px以下）の画面環境にスタイルを適用します。" },
+            { id: 94, category: "PRACTICAL", type: "choice", question: "Webサイトの全体構造を樹木状に図式化し、ページ同士の階層関係を示したドキュメントはどれか。", options: ["サイトマップ", "ワイヤーフレーム", "ペルソナシート", "マインドマップ"], correct: 0, explanation: "サイトの全ページ構造を示すものをサイトマップと言います。" },
+            { id: 95, category: "PRACTICAL", type: "tf", question: "JPEG画像は可逆圧縮のため、保存を繰り返しても画質が一切劣化しない。", options: ["○（正しい）", "×（誤り）"], correct: 1, explanation: "誤り。JPEGは非可逆圧縮のため、編集・保存を繰り返すと画質が劣化します。" },
+            { id: 96, category: "PRACTICAL", type: "choice", question: "ベクター画像フォーマットであり、拡大縮小しても画質が劣化しないWeb用画像形式はどれか。", options: ["SVG", "GIF", "JPEG", "PNG"], correct: 0, explanation: "SVG (Scalable Vector Graphics) はベクター形式で劣化しません。" },
+            { id: 97, category: "PRACTICAL", type: "choice", question: "Webサイトのターゲットとなる架空のユーザー像を具現化したものを何と呼ぶか。", options: ["ペルソナ", "ターゲットグループ", "シナリオ", "ワイヤー"], correct: 0, explanation: "ユーザー像を詳細に設定する手法をペルソナと呼びます。" },
+            { id: 98, category: "PRACTICAL", type: "tf", question: "Favicon（ファビコン）とは、ブラウザのタブやブックマークに表示される小さなアイコンのことである。", options: ["○（正しい）", "×（誤り）"], correct: 0, explanation: "正しい。サイトのシンボルアイコンとして設定します。" },
+            { id: 99, category: "PRACTICAL", type: "choice", question: "Web制作において、ファイルの変更履歴を記録・管理するバージョン管理システムはどれか。", options: ["Git", "Docker", "Apache", "Node.js"], correct: 0, explanation: "Gitが分散型バージョン管理システムとして広く使われます。" },
+            { id: 100, category: "PRACTICAL", type: "choice", question: "Googleなどの検索エンジンで上位表示を目指す一連の最適化施策を何と呼ぶか。", options: ["SEO (検索エンジン最適化)", "SEM", "LPO", "CRO"], correct: 0, explanation: "SEO (Search Engine Optimization) と呼ばれます。" }
+        ];
+
+        // --- 単語帳データ（全40用語に増量） ---
+        const FLASHCARDS = [
+            { id: 1, term: "JIS X 8341-3", category: "アクセシビリティ", def: "Webアクセシビリティに関する日本産業規格。レベルA, AA, AAAの3段階が存在する。" },
+            { id: 2, term: "alt属性", category: "HTML/CSS", def: "img要素に設定する代替テキスト。音声読み上げや画像非表示環境で代替情報として利用される。" },
+            { id: 3, term: "W3C", category: "Web基礎", def: "World Wide Web Consortium。HTMLやCSS等のWeb標準技術の規格策定を行う国際団体。" },
+            { id: 4, term: "404 Not Found", category: "Web基礎", def: "HTTPステータスコードの1つ。リクエストされたWebページやファイルがサーバー上に存在しない状態。" },
+            { id: 5, term: "HTTPS", category: "セキュリティ", def: "SSL/TLS技術を用いて通信内容を暗号化・保護したHTTPプロトコル（標準ポート443）。" },
+            { id: 6, term: "補色", category: "カラー", def: "色相環の正反対に位置する色同士の組み合わせ。互いに引き立て合い、強い対比効果を生む。" },
+            { id: 7, term: "肖像権", category: "法規", def: "自分の姿や顔写真を無断で撮影・公表・利用されないよう守る法的権利。" },
+            { id: 8, term: "WAI-ARIA", category: "アクセシビリティ", def: "HTMLのロールや状態を補正・明確化し、スクリーンリーダー等の支援技術へ伝える標準仕様。" },
+            { id: 9, term: "XSS", category: "セキュリティ", def: "Webアプリの脆弱性を突き、悪意あるスクリプトを埋め込んでユーザー側で実行させる攻撃手法。" },
+            { id: 10, term: "rem", category: "HTML/CSS", def: "ルート要素（htmlタグ）のフォントサイズを基準（1rem）とするスタイルシートの相対単位。" },
+            { id: 11, term: "CSRF", category: "セキュリティ", def: "ログイン状態のセッションを悪用し、意図しない書き込みや決済等を強制実行させる攻撃。" },
+            { id: 12, term: "ベーシック認証", category: "セキュリティ", def: "HTTP基本認証。パスワードが暗号化されずBase64エンコードのみで送信されるため盗聴注意。" },
+            { id: 13, term: "無方式主義", category: "法規", def: "著作権は作品を創作した瞬間に自動発生し、登録などの手続きを一切必要としない原則。" },
+            { id: 14, term: "特定電子メール法", category: "法規", def: "広告メール等を送信する際、事前に同意を得た受信者だけに送るオプトイン方式を義務付ける法律。" },
+            { id: 15, term: "商標権", category: "法規", def: "自社の商品名やロゴマークなどを他社に独占的に利用・模倣されないよう保護する権利。" },
+            { id: 16, term: "光過敏性発作", category: "アクセシビリティ", def: "1秒に3回を超える激しい光の点滅・明滅により引き起こされる発作。ガイドラインで禁止規定あり。" },
+            { id: 17, term: "コントラスト比 4.5:1", category: "アクセシビリティ", def: "JIS X 8341-3 レベルAAにおいて、通常サイズのテキストに求められる最低コントラスト比。" },
+            { id: 18, term: "スキップリンク", category: "アクセシビリティ", def: "キーボード操作者や音声読み上げ利用者が、ヘッダーナビ等を飛ばして本文へ移動するためのリンク。" },
+            { id: 19, term: "加法混色 (RGB)", category: "カラー", def: "光の三原色（赤・緑・青）。色を混ぜるほど明るくなり、3色が揃うと白色になる。" },
+            { id: 20, term: "減法混色 (CMY)", category: "カラー", def: "色料の三原色（シアン・マゼンタ・イエロー）。印刷物で用いられ、混ぜるほど暗くなる。" },
+            { id: 21, term: "カーニング", category: "デザイン", def: "文字と文字の間の余白を個別に微調整し、視覚的な均等感や美しさを整える作業。" },
+            { id: 22, term: "Zパターン", category: "デザイン", def: "Web画面を閲覧する際、ユーザーの視線が左上→右上→左下→右下へと移動する心理傾向。" },
+            { id: 23, term: "SVG", category: "ファイル形式", def: "ベクター形式の画像フォーマット。拡大・縮小しても画質が全く劣化しないのが特徴。" },
+            { id: 24, term: "PNG", category: "ファイル形式", def: "可逆圧縮で背景の透過（アルファチャンネル）に対応したWeb標準の画像フォーマット。" },
+            { id: 25, term: "DNS", category: "Web基礎", def: "Domain Name System。IPアドレス（数値）とドメイン名（文字列）を相互変換（名前解決）する仕組み。" },
+            { id: 26, term: "Cookie", category: "Web基礎", def: "ユーザーのブラウザ側に一時保存されるテキストデータ。ログイン状態やカート情報の保持に使われる。" },
+            { id: 27, term: "CDN", category: "Web基礎", def: "Content Delivery Network。世界中の分散サーバーからWebコンテンツを高速配信する技術。" },
+            { id: 28, term: "レスポンシブWebデザイン", category: "HTML/CSS", def: "単一のHTMLで、PC・スマホ等の画面幅（メディアクエリ）に応じてデザインを最適化する手法。" },
+            { id: 29, term: "ファビコン (Favicon)", category: "Web基礎", def: "ブラウザのタブやブックマーク一覧に表示されるWebサイトのシンボルアイコン。" },
+            { id: 30, term: "SEO", category: "Web基礎", def: "Search Engine Optimization。検索エンジンで自社サイトを上位表示させるための最適化施策。" },
+            { id: 31, term: "ワイヤーフレーム", category: "Web制作", def: "Webページのレイアウトや要素の配置場所を視覚的に整理したデザインの設計図。" },
+            { id: 32, term: "ペルソナ", category: "Web制作", def: "サービスやWebサイトのターゲットとなる架空の象徴的なユーザー像。" },
+            { id: 33, term: "GPLライセンス", category: "法規", def: "オープンソースのライセンス。改変・再配布したプログラムにもGPLを適用（コード公開義務）させる。" },
+            { id: 34, term: "不正アクセス禁止法", category: "法規", def: "他人のID・パスワードを無断入力し、制限されたコンピュータへアクセスする行為を処罰する法律。" },
+            { id: 35, term: "フィッシング", category: "セキュリティ", def: "実在の企業を装った偽メールや偽サイトで、ユーザーのクレジットカード番号等を盗み取る詐欺手法。" },
+            { id: 36, term: "SQLインジェクション", category: "セキュリティ", def: "フォーム等に不正なSQL命令を入力し、データベースの閲覧・改ざん・破壊を行う攻撃。" },
+            { id: 37, category: "HTML/CSS", term: "Flexbox", def: "CSSのレイアウトモジュール。1次元（横または縦）の要素の並びや揃えを柔軟にコントロールできる。" },
+            { id: 38, category: "HTML/CSS", term: "box-sizing", def: "border-boxに指定すると、width/heightにpaddingとborderの厚みが含まれるようになり計算が容易になる。" },
+            { id: 39, category: "Web基礎", term: "クローラー", def: "検索エンジンがWeb上のページを自動巡回して文書や画像を収集するプログラム（スパイダー）。" },
+            { id: 40, category: "デザイン", term: "デザインの4基本原則", def: "「近接」「整列」「反復」「コントラスト」の4つで、情報を視覚的にわかりやすく整理する基本法則。" }
+        ];
+
+        // --- APP STATE ---
+        let state = {
+            activeTab: 'dashboard',
+            userData: {
+                totalAnswered: 0, correctCount: 0, examHighScore: null,
+                bookmarks: [], masteredCards: [], wrongQuestionIds: [],
+                categoryStats: {}, examHistory: [],
+                daily: { date: '', answered: 0 }
+            },
+            practice: { currentCategory: 'ALL', questions: [], currentIndex: 0, answers: {}, mode: 'normal' },
+            exam: { questions: [], currentIndex: 0, answers: {}, timer: null, timeLeft: 2700 },
+            flashcards: { activeList: [], currentIndex: 0, isFlipped: false }, practiceAutoNextTimer: null
+        };
+
+        function loadUserData() {
+            const saved = localStorage.getItem('web3_master_data');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state.userData = { ...state.userData, ...parsed };
+                } catch(e) { console.error(e); }
+            }
+            state.userData.bookmarks = Array.isArray(state.userData.bookmarks) ? state.userData.bookmarks : [];
+            state.userData.masteredCards = Array.isArray(state.userData.masteredCards) ? state.userData.masteredCards : [];
+            state.userData.wrongQuestionIds = Array.isArray(state.userData.wrongQuestionIds) ? state.userData.wrongQuestionIds : [];
+            state.userData.categoryStats = state.userData.categoryStats || {};
+            state.userData.examHistory = Array.isArray(state.userData.examHistory) ? state.userData.examHistory : [];
+            updateDashboardStats(); updateWeakUI();
+        }
+
+        function saveUserData() {
+            localStorage.setItem('web3_master_data', JSON.stringify(state.userData));
+            updateDashboardStats();
+        }
+
+        function clearPracticeAutoNextTimer(){if(state.practiceAutoNextTimer){clearTimeout(state.practiceAutoNextTimer);state.practiceAutoNextTimer=null;}}
+        function updateWeakUI(){
+            const ids=Array.isArray(state.userData.wrongQuestionIds)?state.userData.wrongQuestionIds:[];
+            state.userData.wrongQuestionIds=[...new Set(ids.filter(id=>QUESTIONS.some(q=>q.id===id)))];
+            const n=state.userData.wrongQuestionIds.length;
+            ['weak-nav-badge','weak-total-count'].forEach(id=>{const e=document.getElementById(id);if(e){e.textContent=n;e.classList.toggle('hidden',n===0)}})
+        }
+        function addWeakQuestion(id){if(!state.userData.wrongQuestionIds.includes(id))state.userData.wrongQuestionIds.push(id)}
+        function removeWeakQuestion(id){state.userData.wrongQuestionIds=state.userData.wrongQuestionIds.filter(x=>x!==id);saveUserData();renderWeakScreen()}
+        function renderWeakScreen(){
+            updateWeakUI(); const qs=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id));
+            const list=document.getElementById('weak-list'), sum=document.getElementById('weak-category-summary'), cc=document.getElementById('weak-category-count'), b=document.getElementById('weak-start-btn');
+            if(!list||!sum)return; if(cc)cc.textContent=new Set(qs.map(q=>q.category)).size; if(b)b.disabled=!qs.length;
+            if(!qs.length){sum.innerHTML='<div class="text-sm text-slate-400 p-4 bg-slate-900/50 rounded-xl">まだ苦手問題はありません。問題集で間違えた問題が自動追加されます。</div>';list.innerHTML='<div class="p-8 text-center bg-slate-800/50 rounded-2xl border border-slate-700 text-slate-500 text-sm">まず問題集に挑戦してみましょう。</div>';return}
+            const counts={};qs.forEach(q=>counts[q.category]=(counts[q.category]||0)+1);
+            sum.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div><div class="flex justify-between text-xs mb-1"><span class="text-slate-300 font-semibold">${escapeHTML(CATEGORIES[c]||c)}</span><span class="text-rose-300 font-black">${n}問</span></div><div class="mini-bar"><div class="progress-fill bg-rose-500" style="width:${Math.round(n/qs.length*100)}%"></div></div></div>`).join('');
+            list.innerHTML=qs.map(q=>`<div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3"><div class="flex justify-between"><span class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category]||q.category)}</span><button onclick="removeWeakQuestion(${q.id})" class="text-xs text-slate-500">苦手から外す</button></div><p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p><div class="text-xs bg-slate-900/80 p-3 rounded-xl"><div class="text-emerald-300 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div><p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p></div></div>`).join('');
+        }
+        function startWeakPractice(){
+            clearPracticeAutoNextTimer();const pool=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id)).sort(()=>Math.random()-.5);
+            if(!pool.length){alert('現在、苦手問題はありません。まず問題集で間違えた問題を作ってください。');return}
+            state.practice.mode='weak';state.practice.currentCategory='WEAK';state.practice.questions=pool;state.practice.currentIndex=0;state.practice.answers={};switchTab('practice');renderPracticeQuestion();
+        }
+        function scrollPracticeToTop(){const m=document.querySelector('main');if(m)m.scrollTo({top:0,behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'})}
+
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-400', 'bg-blue-950/60', 'border', 'border-blue-800/50');
+                btn.classList.add('text-slate-400');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-400');
+                activeNav.classList.add('text-blue-400', 'bg-blue-950/60', 'border', 'border-blue-800/50');
+            }
+
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-400');
+                btn.classList.add('text-slate-400');
+            });
+            const activeMobileNav = document.getElementById(`mobile-nav-${tabId}`);
+            if (activeMobileNav) {
+                activeMobileNav.classList.remove('text-slate-400');
+                activeMobileNav.classList.add('text-blue-400');
+            }
+
+            clearPracticeAutoNextTimer();
+            if (tabId === 'practice' && state.practice.questions.length === 0) {
+                startPracticeSession('normal');
+            } else if (tabId === 'weak') {
+                renderWeakScreen();
+            } else if (tabId === 'bookmarks') {
+                renderBookmarksList();
+            } else if (tabId === 'flashcards') {
+                initFlashcards();
+            }
+            
+        }
+
+        function updateDashboardStats() {
+            document.getElementById('stat-total-answered').innerText = state.userData.totalAnswered;
+            const accuracy = state.userData.totalAnswered > 0 
+                ? Math.round((state.userData.correctCount / state.userData.totalAnswered) * 100) 
+                : 0;
+            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('stat-exam-high').innerText = state.userData.examHighScore !== null 
+                ? `${state.userData.examHighScore} / 25` : '未受験';
+            document.getElementById('stat-bookmarks-count').innerText = state.userData.bookmarks.length;
+
+            const container = document.getElementById('category-cards');
+            if (container) {
+                container.innerHTML = Object.entries(CATEGORIES).map(([key, label]) => {
+                    const count = QUESTIONS.filter(q => q.category === key).length;
+                    const stat = state.userData.categoryStats[key] || {answered:0, correct:0};
+                    const pct = stat.answered ? Math.round(stat.correct / stat.answered * 100) : 0;
+                    return `
+                        <button onclick="selectCategoryPractice('${key}')" class="tap-target text-left p-4 border border-slate-700/60 rounded-xl bg-slate-800/80 hover:border-blue-500 transition">
+                            <div class="font-bold text-white text-sm mb-1">${label}</div>
+                            <div class="text-xs text-slate-400">収録問題: ${count} 問</div>
+                            <div class="mt-3 flex items-center justify-between text-[11px]">
+                                <span class="text-slate-500">理解度</span>
+                                <span class="font-bold ${stat.answered ? (pct >= 80 ? 'text-emerald-400' : 'text-amber-400') : 'text-slate-600'}">${stat.answered ? pct + '%' : '--'}</span>
+                            </div>
+                            <div class="mini-bar mt-1"><div class="progress-fill bg-blue-500" style="width:${pct}%"></div></div>
+                        </button>
+                    `;
+                }).join('');
+            }
+        }
+
+        function selectCategoryPractice(catKey) {
+            document.getElementById('practice-category-select').value = catKey;
+            switchTab('practice');
+            startPracticeSession();
+        }
+
+        function startPracticeSession(mode = 'normal') {
+            const catSelect = document.getElementById('practice-category-select');
+            const cat = catSelect ? catSelect.value : 'ALL';
+            state.practice.currentCategory = cat;
+            state.practice.mode = mode;
+
+            let pool = cat === 'ALL' ? [...QUESTIONS] : QUESTIONS.filter(q => q.category === cat);
+            pool = pool.sort(() => Math.random() - 0.5);
+
+            state.practice.questions = pool;
+            state.practice.currentIndex = 0;
+            state.practice.answers = {};
+            renderPracticeQuestion();
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
+
+        function renderPracticeQuestion() {
+            const qList = state.practice.questions;
+            if (!qList || qList.length === 0) return;
+
+            const q = qList[state.practice.currentIndex];
+            document.getElementById('practice-mode-label').innerText = state.practice.mode==='weak' ? '苦手問題対策' : '通常演習';
+            document.getElementById('practice-category-badge').innerText = CATEGORIES[q.category] || '全般';
+            document.getElementById('practice-progress-text').innerText = `問題 ${state.practice.currentIndex + 1} / ${qList.length}`;
+            document.getElementById('practice-type-tag').innerText = q.type === 'tf' ? '○×形式' : '四肢択一';
+            document.getElementById('practice-question-text').innerText = q.question;
+
+            const isBookmarked = state.userData.bookmarks.includes(q.id);
+            document.getElementById('practice-bookmark-btn').innerHTML = isBookmarked ? '&#128278; 保存済み' : '&#128278; ブックマーク保存';
+
+            const optionsContainer = document.getElementById('practice-options');
+            const answeredIndex = state.practice.answers[q.id];
+            const isAnswered = answeredIndex !== undefined;
+
+            optionsContainer.innerHTML = q.options.map((opt, idx) => {
+                let btnStyle = "border-slate-700 bg-slate-900/60 hover:border-blue-500 text-slate-200";
+                if (isAnswered) {
+                    if (idx === q.correct) btnStyle = "border-emerald-500 bg-emerald-950/60 text-emerald-200 font-bold";
+                    else if (idx === answeredIndex) btnStyle = "border-rose-500 bg-rose-950/60 text-rose-200 font-bold";
+                    else btnStyle = "border-slate-800 bg-slate-900/30 opacity-50 text-slate-500";
+                }
+                return `
+                    <button onclick="answerPractice(${idx})" ${isAnswered ? 'disabled' : ''} class="question-option tap-target w-full text-left p-4 rounded-xl border text-sm transition flex items-center justify-between gap-3 ${btnStyle}">
+                        <span>${escapeHTML(opt)}</span>
+                        ${isAnswered && idx === q.correct ? '<span>正解 &#10003;</span>' : ''}
+                        ${isAnswered && idx === answeredIndex && idx !== q.correct ? '<span>不正解 &#10007;</span>' : ''}
+                    </button>`;
+            }).join('');
+
+            const expContainer = document.getElementById('practice-explanation');
+            if (isAnswered) {
+                const isCorrect = answeredIndex === q.correct;
+                expContainer.className = `p-5 rounded-xl border text-sm ${isCorrect ? 'bg-emerald-950/80 border-emerald-700/60 text-emerald-100' : 'bg-rose-950/80 border-rose-700/60 text-rose-100'}`;
+                expContainer.innerHTML = `<div class="font-bold flex items-center gap-2 mb-2 text-base">${isCorrect ? '&#10003; 正解です！' : '&#10007; 不正解です'}</div><p class="leading-relaxed text-sm">${escapeHTML(q.explanation)}</p>`;
+                expContainer.classList.remove('hidden');
+            } else {
+                expContainer.classList.add('hidden');
+            }
+
+            document.getElementById('practice-prev-btn').disabled = state.practice.currentIndex === 0;
+            document.getElementById('practice-next-btn').disabled = state.practice.currentIndex === qList.length - 1;
+        }
+
+        function answerPractice(index) {
+            const q=state.practice.questions[state.practice.currentIndex];
+            if(!q||state.practice.answers[q.id]!==undefined)return;
+            clearPracticeAutoNextTimer(); state.practice.answers[q.id]=index; state.userData.totalAnswered++;
+            const ok=index===q.correct; if(ok)state.userData.correctCount++;
+            const cat=q.category;if(!state.userData.categoryStats[cat])state.userData.categoryStats[cat]={answered:0,correct:0};
+            state.userData.categoryStats[cat].answered++;if(ok)state.userData.categoryStats[cat].correct++;
+            if(ok)removeWeakQuestion(q.id);else addWeakQuestion(q.id);
+            saveUserData();renderPracticeQuestion();updateWeakUI();
+            const t=document.getElementById('practice-auto-next-toggle');
+            if(t&&t.checked&&state.practice.currentIndex<state.practice.questions.length-1){
+                state.practiceAutoNextTimer=setTimeout(()=>{state.practiceAutoNextTimer=null;nextPracticeQuestion(true)},ok?650:1150);
+            }
+        }
+
+        function toggleBookmarkCurrentPractice() {
+            const q = state.practice.questions[state.practice.currentIndex];
+            if (!q) return;
+            const idx = state.userData.bookmarks.indexOf(q.id);
+            if (idx > -1) state.userData.bookmarks.splice(idx, 1);
+            else state.userData.bookmarks.push(q.id);
+            saveUserData();
+            renderPracticeQuestion();
+        }
+
+        function prevPracticeQuestion(){clearPracticeAutoNextTimer();if(state.practice.currentIndex>0){state.practice.currentIndex--;renderPracticeQuestion();if(window.matchMedia('(max-width:767px)').matches)requestAnimationFrame(scrollPracticeToTop)}}
+        function nextPracticeQuestion(){clearPracticeAutoNextTimer();if(state.practice.currentIndex<state.practice.questions.length-1){state.practice.currentIndex++;renderPracticeQuestion();if(window.matchMedia('(max-width:767px)').matches)requestAnimationFrame(scrollPracticeToTop)}}
+
+        document.getElementById('practice-category-select').addEventListener('change', () => {
+            startPracticeSession();
+        });
+
+        // --- EXAM LOGIC ---
+        function startExam() {
+            document.getElementById('exam-intro').classList.add('hidden');
+            document.getElementById('exam-result').classList.add('hidden');
+            document.getElementById('exam-active').classList.remove('hidden');
+
+            state.exam.questions = [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 25);
+            state.exam.currentIndex = 0;
+            state.exam.answers = {};
+            state.exam.timeLeft = 2700;
+
+            clearInterval(state.exam.timer);
+            state.exam.timer = setInterval(updateExamTimer, 1000);
+            updateExamTimer();
+            renderExamQuestion();
+        }
+
+        function updateExamTimer() {
+            if (state.exam.timeLeft <= 0) {
+                clearInterval(state.exam.timer);
+                finishExam();
+                return;
+            }
+            state.exam.timeLeft--;
+            const mins = Math.floor(state.exam.timeLeft / 60);
+            const secs = state.exam.timeLeft % 60;
+            document.getElementById('exam-timer').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function renderExamQuestion() {
+            const q = state.exam.questions[state.exam.currentIndex];
+            if (!q) return;
+
+            const total = state.exam.questions.length;
+            const current = state.exam.currentIndex + 1;
+            document.getElementById('exam-progress-indicator').innerText = `問題 ${current} / ${total}`;
+            document.getElementById('exam-question-text').innerText = q.question;
+
+            const selected = state.exam.answers[q.id];
+            const optionsContainer = document.getElementById('exam-options');
+
+            optionsContainer.innerHTML = q.options.map((opt, idx) => {
+                const isSelected = selected === idx;
+                return `
+                    <button onclick="answerExam(${idx})" class="tap-target w-full text-left p-4 rounded-xl border text-sm transition flex items-center justify-between ${
+                        isSelected ? 'border-blue-500 bg-blue-950/80 text-white font-bold' : 'border-slate-700 bg-slate-900/60 hover:bg-slate-700/40 text-slate-300'
+                    }">
+                        <span>${escapeHTML(opt)}</span>
+                        <div class="w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? 'border-blue-500 bg-blue-500 text-white' : 'border-slate-600'}">${isSelected ? '&#10003;' : ''}</div>
+                    </button>`;
+            }).join('');
+
+            const answeredCount = Object.keys(state.exam.answers).length;
+            document.getElementById('exam-answered-summary').innerText = `回答済み: ${answeredCount} / ${total} 問`;
+
+            document.getElementById('exam-prev-btn').disabled = state.exam.currentIndex === 0;
+            renderExamQuestionGrid();
+        }
+
+        function renderExamQuestionGrid() {
+            const grid = document.getElementById('exam-question-grid');
+            grid.innerHTML = state.exam.questions.map((q, i) => {
+                const answered = state.exam.answers[q.id] !== undefined;
+                const current = i === state.exam.currentIndex;
+                const cls = current ? 'bg-blue-600 border-blue-400 text-white' :
+                    answered ? 'bg-emerald-950 border-emerald-700 text-emerald-300' :
+                    'bg-slate-900 border-slate-700 text-slate-400';
+                return `<button onclick="jumpToExamQuestion(${i})" class="tap-target aspect-square rounded-lg border text-xs font-bold ${cls}">${i+1}</button>`;
+            }).join('');
+        }
+
+        function jumpToExamQuestion(index) {
+            state.exam.currentIndex = index;
+            renderExamQuestion();
+        }
+
+        function answerExam(index) {
+            const q = state.exam.questions[state.exam.currentIndex];
+            if (!q) return;
+            state.exam.answers[q.id] = index;
+            renderExamQuestion();
+        }
+
+        function navigateExamQuestion(delta) {
+            const newIndex = state.exam.currentIndex + delta;
+            if (newIndex >= 0 && newIndex < state.exam.questions.length) {
+                state.exam.currentIndex = newIndex;
+                renderExamQuestion();
+            }
+        }
+
+        function handleExamNext() {
+            if (state.exam.currentIndex < state.exam.questions.length - 1) {
+                navigateExamQuestion(1);
+            } else {
+                finishExamPrompt();
+            }
+        }
+
+        function finishExamPrompt() {
+            const unanswered = state.exam.questions.length - Object.keys(state.exam.answers).length;
+            if (unanswered > 0) {
+                if (!confirm(`未回答の問題が ${unanswered} 問あります。採点に進みますか？`)) return;
+            }
+            finishExam();
+        }
+
+        function finishExam() {
+            clearInterval(state.exam.timer);
+            let correctCount = 0;
+            const categoryResult = {};
+
+            state.exam.questions.forEach(q => {
+                const userAns = state.exam.answers[q.id];
+                const isCorrect = userAns !== undefined && userAns === q.correct;
+                if (isCorrect) correctCount++;
+
+                if (!categoryResult[q.category]) categoryResult[q.category] = {correct: 0, total: 0};
+                categoryResult[q.category].total++;
+                if (isCorrect) categoryResult[q.category].correct++;
+            });
+
+            const total = state.exam.questions.length;
+            const pct = Math.round((correctCount / total) * 100);
+            const isPassed = pct >= 70;
+
+            if (state.userData.examHighScore === null || correctCount > state.userData.examHighScore) {
+                state.userData.examHighScore = correctCount;
+            }
+            saveUserData();
+
+            document.getElementById('exam-badge').innerText = isPassed ? '○' : '×';
+            document.getElementById('exam-status-title').innerText = isPassed ? '合格ライン達成！' : '合格ライン未達';
+            document.getElementById('exam-status-subtitle').innerText = isPassed ? '素晴らしい成果です！本試験もこの調子で臨みましょう。' : 'もう一度間違えた部分を復習して再挑戦しましょう。';
+            document.getElementById('exam-score-text').innerText = `${correctCount} / ${total}`;
+            document.getElementById('exam-accuracy-text').innerText = `${pct}%`;
+
+            document.getElementById('exam-category-result').innerHTML = '<div class="text-sm font-bold text-white mb-2">分野別結果</div>' +
+                Object.entries(categoryResult).map(([cat, r]) => `
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-300">${CATEGORIES[cat] || cat}</span>
+                            <span class="font-bold ${r.correct/r.total >= 0.7 ? 'text-emerald-400' : 'text-rose-400'}">${r.correct}/${r.total}</span>
+                        </div>
+                        <div class="mini-bar"><div class="progress-fill ${r.correct/r.total >= 0.7 ? 'bg-emerald-500' : 'bg-rose-500'}" style="width:${Math.round(r.correct/r.total*100)}%"></div></div>
+                    </div>
+                `).join('');
+
+            document.getElementById('exam-review-list').innerHTML = state.exam.questions.map((q, idx) => {
+                const userAns = state.exam.answers[q.id];
+                const isCorrect = userAns !== undefined && userAns === q.correct;
+                return `
+                    <div class="p-4 border rounded-xl ${isCorrect ? 'border-slate-700 bg-slate-900/60' : 'border-rose-900/50 bg-rose-950/20'} space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-bold text-slate-400">問 ${idx + 1} (${CATEGORIES[q.category]})</span>
+                            <span class="font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '正解 &#10003;' : '不正解 &#10007;'}</span>
+                        </div>
+                        <p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p>
+                        <div class="text-xs space-y-1 text-slate-300">
+                            <div>あなたの解答: <span class="font-semibold">${userAns !== undefined ? escapeHTML(q.options[userAns]) : '未解答'}</span></div>
+                            <div>正解: <span class="font-semibold text-emerald-400">${escapeHTML(q.options[q.correct])}</span></div>
+                        </div>
+                        <p class="text-xs text-slate-400 bg-slate-950/60 p-3 rounded-lg mt-2">${escapeHTML(q.explanation)}</p>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('exam-active').classList.add('hidden');
+            document.getElementById('exam-result').classList.remove('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // --- BOOKMARKS & FLASHCARDS & DATA MANAGEMENT ---
+        function renderBookmarksList() {
+            const container = document.getElementById('bookmarks-list-container');
+            const bookmarkedQuestions = QUESTIONS.filter(q => state.userData.bookmarks.includes(q.id));
+            document.getElementById('bookmark-badge-count').innerText = `${bookmarkedQuestions.length} 件`;
+
+            if (bookmarkedQuestions.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center bg-slate-800/40 rounded-2xl border border-slate-700/50 text-slate-400 text-sm">保存された問題はありません。</div>`;
+            } else {
+                container.innerHTML = bookmarkedQuestions.map(q => `
+                    <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-0.5 bg-blue-950 text-blue-300 border border-blue-800 text-xs font-bold rounded-full">${CATEGORIES[q.category]}</span>
+                            <button onclick="removeBookmark(${q.id})" class="text-xs text-rose-400 hover:underline">削除</button>
+                        </div>
+                        <p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p>
+                        <div class="text-xs bg-slate-900/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                            <span class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</span>
+                            <p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function removeBookmark(id) {
+            state.userData.bookmarks = state.userData.bookmarks.filter(bId => bId !== id);
+            saveUserData();
+            renderBookmarksList();
+        }
+
+        // --- 単語帳機能 (暗記済み除外ロジック＆40用語対応) ---
+        function initFlashcards() {
+            state.flashcards.activeList = FLASHCARDS.filter(c => !state.userData.masteredCards.includes(c.id));
+            state.flashcards.currentIndex = 0;
+            renderFlashcard();
+        }
+
+        function renderFlashcard() {
+            const list = state.flashcards.activeList;
+            const container = document.getElementById('flashcard-container');
+            const controls = document.getElementById('flashcard-controls');
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center bg-slate-800 border border-slate-700 rounded-2xl space-y-4 my-8">
+                        <div class="text-4xl">&#127881;</div>
+                        <h3 class="text-xl font-bold text-white">すべての単語を暗記しました！</h3>
+                        <p class="text-xs text-slate-400">暗記済みをリセットすると、再度すべての単語を復習できます。</p>
+                        <button onclick="resetMasteredCards()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition">
+                            暗記済みリストをリセット
+                        </button>
+                    </div>`;
+                controls.classList.add('hidden');
+                document.getElementById('flashcard-counter').innerText = `0 / 0`;
+                return;
+            }
+
+            controls.classList.remove('hidden');
+            const card = list[state.flashcards.currentIndex];
+
+            // 単語カード表示用の標準HTMLを差し込み（全完了後に再初期化された場合のため）
+            if (!document.getElementById('flashcard')) {
+                container.innerHTML = `
+                    <div id="flashcard" onclick="handleFlashcardClick(event)" class="flashcard-swipe w-full h-80 rounded-2xl cursor-pointer relative transform-style-3d transition-transform duration-500 shadow-2xl border border-slate-700 bg-slate-800">
+                        <div class="absolute inset-0 backface-hidden p-8 flex flex-col justify-between items-center text-center">
+                            <span id="card-tag" class="px-3 py-1 bg-slate-700/60 text-slate-300 border border-slate-600 rounded-full text-xs font-bold">カテゴリ</span>
+                            <div class="space-y-2">
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">用語 / 規格名</p>
+                                <h3 id="card-term" class="text-2xl font-black text-white">---</h3>
+                            </div>
+                            <p class="text-xs text-blue-400 font-semibold flex items-center gap-1">&#128161; クリックで解説表示</p>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 p-8 flex flex-col justify-between items-center text-center bg-gradient-to-b from-blue-950 to-slate-900 border border-blue-700/50 text-white rounded-2xl">
+                            <span class="px-3 py-1 bg-blue-900/60 text-blue-300 border border-blue-700/40 rounded-full text-xs font-bold">ポイント</span>
+                            <p id="card-definition" class="text-sm md:text-base text-slate-200 leading-relaxed font-medium">---</p>
+                            <p class="text-xs text-slate-400">タップで戻る</p>
+                        </div>
+                    </div>`;
+                setupFlashcardSwipe();
+            }
+
+            setupFlashcardSwipe();
+            document.getElementById('card-tag').innerText = card.category;
+            document.getElementById('card-term').innerText = card.term;
+            document.getElementById('card-definition').innerText = card.def;
+            document.getElementById('flashcard-counter').innerText = `${state.flashcards.currentIndex + 1} / ${list.length}`;
+            state.flashcards.isFlipped = false;
+            document.getElementById('flashcard').classList.remove('rotate-y-180');
+        }
+
+        // --- Mobile flashcard swipe ---
+        let flashcardTouchStartX = 0;
+        let flashcardTouchStartY = 0;
+        let flashcardTouchMoved = false;
+        let suppressFlashcardClick = false;
+
+        function handleFlashcardClick(event) {
+            if (suppressFlashcardClick) {
+                suppressFlashcardClick = false;
+                return;
+            }
+            flipCard();
+        }
+
+        function setupFlashcardSwipe() {
+            const cardEl = document.getElementById('flashcard');
+            if (!cardEl || cardEl.dataset.swipeReady === 'true') return;
+
+            cardEl.dataset.swipeReady = 'true';
+
+            cardEl.addEventListener('touchstart', (event) => {
+                if (!event.touches || event.touches.length !== 1) return;
+                flashcardTouchStartX = event.touches[0].clientX;
+                flashcardTouchStartY = event.touches[0].clientY;
+                flashcardTouchMoved = false;
+            }, {passive: true});
+
+            cardEl.addEventListener('touchmove', (event) => {
+                if (!event.touches || event.touches.length !== 1) return;
+
+                const dx = event.touches[0].clientX - flashcardTouchStartX;
+                const dy = event.touches[0].clientY - flashcardTouchStartY;
+
+                // Ignore mostly-vertical movement so the page can scroll normally.
+                if (Math.abs(dy) > Math.abs(dx)) return;
+
+                if (Math.abs(dx) > 12) {
+                    flashcardTouchMoved = true;
+                }
+            }, {passive: true});
+
+            cardEl.addEventListener('touchend', (event) => {
+                const touch = event.changedTouches && event.changedTouches[0];
+                if (!touch) return;
+
+                const dx = touch.clientX - flashcardTouchStartX;
+                const dy = touch.clientY - flashcardTouchStartY;
+
+                if (flashcardTouchMoved && Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                    suppressFlashcardClick = true;
+
+                    if (dx < 0) {
+                        nextCard();
+                    } else {
+                        prevCard();
+                    }
+                }
+
+                flashcardTouchStartX = 0;
+                flashcardTouchStartY = 0;
+                flashcardTouchMoved = false;
+            }, {passive: true});
+        }
+
+        function flipCard() {
+            const cardEl = document.getElementById('flashcard');
+            if (!cardEl) return;
+            state.flashcards.isFlipped = !state.flashcards.isFlipped;
+            cardEl.classList.toggle('rotate-y-180', state.flashcards.isFlipped);
+        }
+
+        function prevCard() {
+            const list = state.flashcards.activeList;
+            if (list.length === 0) return;
+            state.flashcards.currentIndex = (state.flashcards.currentIndex - 1 + list.length) % list.length;
+            renderFlashcard();
+        }
+
+        function nextCard() {
+            const list = state.flashcards.activeList;
+            if (list.length === 0) return;
+            state.flashcards.currentIndex = (state.flashcards.currentIndex + 1) % list.length;
+            renderFlashcard();
+        }
+
+        function toggleCardMastered() {
+            const list = state.flashcards.activeList;
+            if (list.length === 0) return;
+
+            const card = list[state.flashcards.currentIndex];
+            if (!state.userData.masteredCards.includes(card.id)) {
+                state.userData.masteredCards.push(card.id);
+                saveUserData();
+            }
+
+            // 暗記済みにした用語を除外してリスト更新
+            state.flashcards.activeList = FLASHCARDS.filter(c => !state.userData.masteredCards.includes(c.id));
+            if (state.flashcards.currentIndex >= state.flashcards.activeList.length) {
+                state.flashcards.currentIndex = 0;
+            }
+            renderFlashcard();
+        }
+
+        function resetMasteredCards() {
+            state.userData.masteredCards = [];
+            saveUserData();
+            initFlashcards();
+        }
+
+        function exportUserData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.userData));
+            const a = document.createElement('a');
+            a.setAttribute("href", dataStr);
+            a.setAttribute("download", "web3_study_backup.json");
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function importUserData(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    state.userData = JSON.parse(e.target.result);
+                    saveUserData();
+                    alert('データを復元しました。');
+                } catch(err) {
+                    alert('ファイルの読み込みに失敗しました。');
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        function resetUserData() {
+            if (confirm('すべての学習データを初期化しますか？')) {
+                localStorage.removeItem('web3_master_data');
+                location.reload();
+            }
+        }
+
+        window.onload = function() {
+            loadUserData();
+            switchTab('dashboard');
+            setupFlashcardSwipe(); updateWeakUI();
+        };
+    </script>
+</body>
+</html>
