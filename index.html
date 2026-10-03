@@ -940,7 +940,7 @@
             list.innerHTML=qs.map(q=>`<div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3"><div class="flex justify-between"><span class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category]||q.category)}</span><button onclick="removeWeakQuestion(${q.id})" class="text-xs text-slate-500">苦手から外す</button></div><p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p><div class="text-xs bg-slate-900/80 p-3 rounded-xl"><div class="text-emerald-300 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div><p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p></div></div>`).join('');
         }
         function startWeakPractice(){
-            clearPracticeAutoNextTimer();const pool=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id)).sort(()=>Math.random()-.5);
+            clearPracticeAutoNextTimer();const pool=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id));for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
             if(!pool.length){alert('現在、苦手問題はありません。まず問題集で間違えた問題を作ってください。');return}
             state.practice.mode='weak';state.practice.currentCategory='WEAK';state.practice.questions=pool;state.practice.currentIndex=0;state.practice.answers={};switchTab('practice');renderPracticeQuestion();
         }
@@ -1029,7 +1029,7 @@
             state.practice.mode = mode;
 
             let pool = cat === 'ALL' ? [...QUESTIONS] : QUESTIONS.filter(q => q.category === cat);
-            pool = pool.sort(() => Math.random() - 0.5);
+            for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
 
             state.practice.questions = pool;
             state.practice.currentIndex = 0;
@@ -1087,6 +1087,7 @@
             }
 
             document.getElementById('practice-prev-btn').disabled = state.practice.currentIndex === 0;
+            const practiceNextBtn=document.getElementById('practice-next-btn');if(practiceNextBtn){practiceNextBtn.innerText=state.practice.currentIndex===qList.length-1?'最初へ ▶':'次の問題 ▶';}
             document.getElementById('practice-next-btn').disabled = state.practice.currentIndex === qList.length - 1;
         }
 
@@ -1116,7 +1117,7 @@
         }
 
         function prevPracticeQuestion(){clearPracticeAutoNextTimer();if(state.practice.currentIndex>0){state.practice.currentIndex--;renderPracticeQuestion();if(window.matchMedia('(max-width:767px)').matches)requestAnimationFrame(scrollPracticeToTop)}}
-        function nextPracticeQuestion(){clearPracticeAutoNextTimer();if(state.practice.currentIndex<state.practice.questions.length-1){state.practice.currentIndex++;renderPracticeQuestion();if(window.matchMedia('(max-width:767px)').matches)requestAnimationFrame(scrollPracticeToTop)}}
+        function nextPracticeQuestion(fromAuto=false){clearPracticeAutoNextTimer();const total=state.practice.questions.length;if(!total)return;if(state.practice.currentIndex<total-1){state.practice.currentIndex++;}else if(!fromAuto){state.practice.currentIndex=0;}else{return;}renderPracticeQuestion();}
 
         document.getElementById('practice-category-select').addEventListener('change', () => {
             startPracticeSession();
@@ -1128,7 +1129,7 @@
             document.getElementById('exam-result').classList.add('hidden');
             document.getElementById('exam-active').classList.remove('hidden');
 
-            state.exam.questions = [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 25);
+            const examPool=[...QUESTIONS];for(let i=examPool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[examPool[i],examPool[j]]=[examPool[j],examPool[i]];}state.exam.questions=examPool.slice(0,25);
             state.exam.currentIndex = 0;
             state.exam.answers = {};
             state.exam.timeLeft = 2700;
