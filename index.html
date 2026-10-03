@@ -713,8 +713,6 @@
             state.userData.wrongQuestionIds = Array.isArray(state.userData.wrongQuestionIds) ? state.userData.wrongQuestionIds : [];
             state.userData.categoryStats = state.userData.categoryStats || {};
             state.userData.examHistory = Array.isArray(state.userData.examHistory) ? state.userData.examHistory : [];
-            updateDashboardStats(); 
-            updateWeakUI();
         }
 
         function saveUserData() {
@@ -722,305 +720,249 @@
             updateDashboardStats();
         }
 
-        function clearPracticeAutoNextTimer(){ 
-            if(state.practiceAutoNextTimer){ 
-                clearTimeout(state.practiceAutoNextTimer); 
-                state.practiceAutoNextTimer = null; 
-            } 
-        }
-        
-        function updateWeakUI(){
-            const ids = Array.isArray(state.userData.wrongQuestionIds) ? state.userData.wrongQuestionIds : [];
-            state.userData.wrongQuestionIds = [...new Set(ids.filter(id => QUESTIONS.some(q => q.id === id)))];
-            const n = state.userData.wrongQuestionIds.length;
-            ['weak-nav-badge','weak-total-count'].forEach(id => {
-                const e = document.getElementById(id);
-                if(e) { e.textContent = n; e.classList.toggle('hidden', n === 0); }
-            });
-        }
-
-        function addWeakQuestion(id){
-            if(!state.userData.wrongQuestionIds.includes(id)) {
-                state.userData.wrongQuestionIds.push(id);
-                saveUserData();
-            }
-        }
-
-        function removeWeakQuestion(id){
-            state.userData.wrongQuestionIds = state.userData.wrongQuestionIds.filter(x => x !== id);
-            saveUserData(); 
-            renderWeakScreen();
-        }
-
-        function renderWeakScreen(){
-            updateWeakUI();
-            const qs = QUESTIONS.filter(q => state.userData.wrongQuestionIds.includes(q.id));
-            const list = document.getElementById('weak-list'), 
-                  sum = document.getElementById('weak-category-summary'), 
-                  cc = document.getElementById('weak-category-count'), 
-                  b = document.getElementById('weak-start-btn');
-            if(!list || !sum) return;
-            if(cc) cc.textContent = new Set(qs.map(q => q.category)).size;
-            if(b) b.disabled = !qs.length;
-            
-            if(!qs.length){
-                sum.innerHTML = '<div class="text-sm text-slate-400 p-4 bg-slate-900/50 rounded-xl">まだ苦手問題はありません。問題集で間違えた問題が自動追加されます。</div>';
-                list.innerHTML = '<div class="p-8 text-center bg-slate-800/50 rounded-2xl border border-slate-700 text-slate-500 text-sm">まず問題集に挑戦してみましょう。</div>';
-                return;
-            }
-            const counts = {};
-            qs.forEach(q => counts[q.category] = (counts[q.category] || 0) + 1);
-            sum.innerHTML = Object.entries(counts).sort((a,b) => b[1] - a[1]).map(([c,n]) => `<div><div class="flex justify-between text-xs mb-1"><span class="text-slate-300 font-semibold">${escapeHTML(CATEGORIES[c]||c)}</span><span class="text-rose-300 font-black">${n}問</span></div><div class="mini-bar"><div class="progress-fill bg-rose-500" style="width:${Math.round(n/qs.length*100)}%"></div></div></div>`).join('');
-            list.innerHTML = qs.map(q => `<div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3"><div class="flex justify-between"><span class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category]||q.category)}</span><button onclick="removeWeakQuestion(${q.id})" class="text-xs text-slate-500 hover:text-rose-400">苦手から外す</button></div><p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p><div class="text-xs bg-slate-900/80 p-3 rounded-xl"><div class="text-emerald-300 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div><p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p></div></div>`).join('');
-        }
-
-        function startWeakPractice(){
-            clearPracticeAutoNextTimer();
-            const pool = QUESTIONS.filter(q => state.userData.wrongQuestionIds.includes(q.id));
-            if(!pool.length){ alert('現在、苦手問題はありません。まず問題集で間違えた問題を作ってください。'); return; }
-            state.practice.mode = 'weak';
-            state.practice.currentCategory = 'WEAK';
-            state.practice.questions = shuffleArray(pool);
-            state.practice.currentIndex = 0;
-            state.practice.answers = {};
-            switchTab('practice');
-            renderPracticeQuestion();
-        }
-
-        function scrollPracticeToTop(){
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            const optionsScrollArea = document.querySelector('.options-scroll-area');
-            if (optionsScrollArea) {
-                optionsScrollArea.scrollTop = 0;
-            }
-        }
-
+        // --- TAB SWITCHING ---
         function switchTab(tabId) {
             state.activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            const target = document.getElementById(`tab-${tabId}`);
-            if (target) target.classList.remove('hidden');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('text-blue-400', 'bg-blue-950/60', 'border', 'border-blue-800/50');
-                btn.classList.add('text-slate-400');
-            });
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeNav) {
-                activeNav.classList.remove('text-slate-400');
-                activeNav.classList.add('text-blue-400', 'bg-blue-950/60', 'border', 'border-blue-800/50');
+            
+            const activeEl = document.getElementById('tab-' + tabId);
+            if (activeEl) {
+                activeEl.classList.remove('hidden');
             }
 
+            // PC Nav UI active styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+            });
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.className = "nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-blue-400 bg-blue-950/60 border border-blue-800/50";
+            }
+
+            // Mobile Nav UI active styles
             document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
                 btn.classList.remove('text-blue-400');
                 btn.classList.add('text-slate-400');
             });
-            const mobileNav = document.getElementById(`mobile-nav-${tabId}`);
-            if (mobileNav) {
-                mobileNav.classList.remove('text-slate-400');
-                mobileNav.classList.add('text-blue-400');
+            const activeMobileNav = document.getElementById('mobile-nav-' + tabId);
+            if (activeMobileNav) {
+                activeMobileNav.classList.remove('text-slate-400');
+                activeMobileNav.classList.add('text-blue-400');
             }
 
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            if (tabId === 'dashboard') updateDashboardStats();
+            if (tabId === 'dashboard') renderDashboard();
             if (tabId === 'practice' && state.practice.questions.length === 0) startPracticeSession();
             if (tabId === 'bookmarks') renderBookmarks();
             if (tabId === 'flashcards') initFlashcards();
-            if (tabId === 'weak') renderWeakScreen();
+            if (tabId === 'weak') renderWeakTab();
         }
 
+        // --- DASHBOARD ---
         function updateDashboardStats() {
-            document.getElementById('stat-total-answered').textContent = state.userData.totalAnswered || 0;
-            const accuracy = state.userData.totalAnswered > 0 
-                ? Math.round((state.userData.correctCount / state.userData.totalAnswered) * 100) 
-                : 0;
-            document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
-            document.getElementById('stat-exam-high').textContent = state.userData.examHighScore !== null 
-                ? `${state.userData.examHighScore}点` 
-                : '未受験';
-            document.getElementById('stat-bookmarks-count').textContent = state.userData.bookmarks.length;
+            const u = state.userData;
+            document.getElementById('stat-total-answered').textContent = u.totalAnswered;
+            const accuracy = u.totalAnswered > 0 ? Math.round((u.correctCount / u.totalAnswered) * 100) : 0;
+            document.getElementById('stat-accuracy').textContent = accuracy + '%';
+            document.getElementById('stat-exam-high').textContent = u.examHighScore !== null ? u.examHighScore + ' 点' : '未受験';
+            document.getElementById('stat-bookmarks-count').textContent = u.bookmarks.length;
 
-            const categoryContainer = document.getElementById('category-cards');
-            if (categoryContainer) {
-                categoryContainer.innerHTML = Object.entries(CATEGORIES).map(([catKey, catName]) => {
-                    const catQuestions = QUESTIONS.filter(q => q.category === catKey);
-                    const stats = state.userData.categoryStats[catKey] || { answered: 0, correct: 0 };
-                    const catAcc = stats.answered > 0 ? Math.round((stats.correct / stats.answered) * 100) : 0;
-                    return `
-                        <div onclick="selectCategoryAndStart('${catKey}')" class="bg-slate-800 p-4 rounded-xl border border-slate-700 hover:border-blue-500 cursor-pointer transition flex flex-col justify-between">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-200 mb-1">${escapeHTML(catName)}</h4>
-                                <p class="text-xs text-slate-400">${catQuestions.length}問</p>
-                            </div>
-                            <div class="mt-3 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
-                                <span class="text-slate-400">正解率</span>
-                                <span class="font-bold ${catAcc >= 70 ? 'text-emerald-400' : 'text-slate-300'}">${stats.answered > 0 ? catAcc + '%' : '未挑戦'}</span>
-                            </div>
+            const weakBadge = document.getElementById('weak-nav-badge');
+            if (weakBadge) {
+                const count = u.wrongQuestionIds.length;
+                weakBadge.textContent = count;
+                weakBadge.classList.toggle('hidden', count === 0);
+            }
+        }
+
+        function renderDashboard() {
+            updateDashboardStats();
+            const cardsContainer = document.getElementById('category-cards');
+            cardsContainer.innerHTML = '';
+
+            Object.entries(CATEGORIES).forEach(([key, name]) => {
+                const qList = QUESTIONS.filter(q => q.category === key);
+                const stats = state.userData.categoryStats[key] || { answered: 0, correct: 0 };
+                const pct = stats.answered > 0 ? Math.round((stats.correct / stats.answered) * 100) : 0;
+
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900/80 p-4 rounded-xl border border-slate-700/80 hover:border-blue-500/50 transition cursor-pointer flex flex-col justify-between';
+                card.onclick = () => {
+                    document.getElementById('practice-category-select').value = key;
+                    switchTab('practice');
+                    startPracticeSession();
+                };
+
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold text-blue-400 bg-blue-950 px-2 py-0.5 rounded border border-blue-800/60">${qList.length}問</span>
+                            <span class="text-xs font-semibold text-slate-400">${stats.answered} 回解答</span>
                         </div>
-                    `;
-                }).join('');
-            }
+                        <h4 class="font-bold text-sm text-slate-200 line-clamp-1">${name}</h4>
+                    </div>
+                    <div class="mt-4 space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400">
+                            <span>正答率</span>
+                            <span class="${pct >= 70 ? 'text-emerald-400' : 'text-slate-300'}">${pct}%</span>
+                        </div>
+                        <div class="mini-bar">
+                            <div class="progress-fill ${pct >= 70 ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
         }
 
-        function selectCategoryAndStart(catKey) {
-            const select = document.getElementById('practice-category-select');
-            if (select) select.value = catKey;
-            switchTab('practice');
-            startPracticeSession();
-        }
-
+        // --- PRACTICE SESSION ---
         function startPracticeSession() {
-            clearPracticeAutoNextTimer();
+            const catSelect = document.getElementById('practice-category-select').value;
+            state.practice.currentCategory = catSelect;
             state.practice.mode = 'normal';
-            const select = document.getElementById('practice-category-select');
-            state.practice.currentCategory = select ? select.value : 'ALL';
             
-            let pool = QUESTIONS;
-            if (state.practice.currentCategory !== 'ALL') {
-                pool = QUESTIONS.filter(q => q.category === state.practice.currentCategory);
-            }
+            let pool = catSelect === 'ALL' ? QUESTIONS : QUESTIONS.filter(q => q.category === catSelect);
             state.practice.questions = shuffleArray(pool);
             state.practice.currentIndex = 0;
             state.practice.answers = {};
+
+            document.getElementById('practice-mode-label').textContent = '通常演習';
             renderPracticeQuestion();
         }
 
         function renderPracticeQuestion() {
-            clearPracticeAutoNextTimer();
-            scrollPracticeToTop();
+            if (state.practiceAutoNextTimer) {
+                clearTimeout(state.practiceAutoNextTimer);
+                state.practiceAutoNextTimer = null;
+            }
 
             const q = state.practice.questions[state.practice.currentIndex];
             if (!q) return;
 
-            document.getElementById('practice-category-badge').textContent = CATEGORIES[q.category] || q.category;
-            document.getElementById('practice-progress-text').textContent = `問題 ${state.practice.currentIndex + 1} / ${state.practice.questions.length}`;
+            const total = state.practice.questions.length;
+            const curIdx = state.practice.currentIndex;
+
+            document.getElementById('practice-category-badge').textContent = CATEGORIES[q.category] || '総合';
+            document.getElementById('practice-progress-text').textContent = `問題 ${curIdx + 1} / ${total}`;
             document.getElementById('practice-type-tag').textContent = q.type === 'tf' ? '○×形式' : '四肢択一';
             document.getElementById('practice-question-text').textContent = q.question;
 
-            const modeLabel = document.getElementById('practice-mode-label');
-            if(modeLabel) modeLabel.textContent = state.practice.mode === 'weak' ? '苦手演習モード' : '通常演習';
-
-            const answeredCount = Object.keys(state.practice.answers).length;
-            let correctInSession = 0;
-            Object.entries(state.practice.answers).forEach(([idx, selected]) => {
-                if (state.practice.questions[idx] && selected === state.practice.questions[idx].correct) correctInSession++;
-            });
-            const sessionAcc = answeredCount > 0 ? Math.round((correctInSession / answeredCount) * 100) : '--';
-            const scoreLabel = document.getElementById('practice-session-score');
-            if (scoreLabel) scoreLabel.textContent = `正答率: ${sessionAcc}${sessionAcc !== '--' ? '%' : ''}`;
-
-            const optionsContainer = document.getElementById('practice-options');
-            const explanationEl = document.getElementById('practice-explanation');
-            const isAnswered = state.practice.answers[state.practice.currentIndex] !== undefined;
-            const selectedIdx = state.practice.answers[state.practice.currentIndex];
-
-            optionsContainer.innerHTML = q.options.map((opt, idx) => {
-                let btnStyle = "bg-slate-900/80 border-slate-700/80 text-slate-200 hover:border-slate-500";
-                let badge = "";
-
-                if (isAnswered) {
-                    if (idx === q.correct) {
-                        btnStyle = "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold";
-                        badge = '<span class="ml-auto text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded">正解</span>';
-                    } else if (idx === selectedIdx) {
-                        btnStyle = "bg-rose-950/80 border-rose-500 text-rose-200 font-bold";
-                        badge = '<span class="ml-auto text-xs bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded">不正解</span>';
-                    } else {
-                        btnStyle = "bg-slate-900/40 border-slate-800 text-slate-500 opacity-60";
-                    }
-                }
-
-                return `
-                    <button onclick="handlePracticeAnswer(${idx})" ${isAnswered ? 'disabled' : ''} class="question-option w-full p-3.5 rounded-xl border text-left text-xs md:text-sm font-medium transition flex items-center justify-between ${btnStyle}">
-                        <span>${escapeHTML(opt)}</span>
-                        ${badge}
-                    </button>
-                `;
-            }).join('');
-
-            if (isAnswered) {
-                const isCorrect = selectedIdx === q.correct;
-                explanationEl.classList.remove('hidden', 'bg-emerald-950/40', 'border-emerald-800/60', 'bg-rose-950/40', 'border-rose-800/60');
-                if (isCorrect) {
-                    explanationEl.classList.add('bg-emerald-950/40', 'border-emerald-800/60');
-                    explanationEl.innerHTML = `<div class="font-bold text-emerald-400 mb-1">⭕ 正解！</div><p class="text-slate-300">${escapeHTML(q.explanation)}</p>`;
-                } else {
-                    explanationEl.classList.add('bg-rose-950/40', 'border-rose-800/60');
-                    explanationEl.innerHTML = `<div class="font-bold text-rose-400 mb-1">❌ 不正解... (正解: ${escapeHTML(q.options[q.correct])})</div><p class="text-slate-300">${escapeHTML(q.explanation)}</p>`;
-                }
-            } else {
-                explanationEl.classList.add('hidden');
-            }
-
-            const isBookmark = state.userData.bookmarks.includes(q.id);
+            // Bookmark Status
+            const isBookmarked = state.userData.bookmarks.includes(q.id);
             const bmBtn = document.getElementById('practice-bookmark-btn');
             if (bmBtn) {
-                bmBtn.innerHTML = isBookmark ? '🔖 ブックマーク解除' : '🔖 ブックマーク保存';
-                bmBtn.className = isBookmark 
-                    ? 'hidden md:flex text-amber-400 hover:text-amber-300 transition items-center gap-1 text-xs font-semibold' 
-                    : 'hidden md:flex text-slate-400 hover:text-amber-400 transition items-center gap-1 text-xs font-semibold';
+                bmBtn.innerHTML = isBookmarked ? '🔖 <span class="text-amber-400">保存済み</span>' : '🔖 ブックマーク保存';
             }
 
-            const prevBtn = document.getElementById('practice-prev-btn');
-            const nextBtn = document.getElementById('practice-next-btn');
-            if (prevBtn) prevBtn.disabled = state.practice.currentIndex === 0;
-            if (nextBtn) nextBtn.disabled = state.practice.currentIndex === state.practice.questions.length - 1;
+            // Update Session Score
+            const answeredKeys = Object.keys(state.practice.answers);
+            if (answeredKeys.length > 0) {
+                let correctCnt = 0;
+                answeredKeys.forEach(k => {
+                    if (state.practice.answers[k].isCorrect) correctCnt++;
+                });
+                const scorePct = Math.round((correctCnt / answeredKeys.length) * 100);
+                document.getElementById('practice-session-score').textContent = `正答率: ${scorePct}% (${correctCnt}/${answeredKeys.length})`;
+            } else {
+                document.getElementById('practice-session-score').textContent = '正答率: --';
+            }
 
-            const mPrev = document.getElementById('mobile-practice-prev-btn');
-            const mNext = document.getElementById('mobile-practice-next-btn');
-            if (mPrev) mPrev.disabled = state.practice.currentIndex === 0;
-            if (mNext) mNext.disabled = state.practice.currentIndex === state.practice.questions.length - 1;
+            // Options
+            const optionsContainer = document.getElementById('practice-options');
+            optionsContainer.innerHTML = '';
+
+            const userAns = state.practice.answers[curIdx];
+
+            q.options.forEach((optText, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'question-option w-full p-3.5 rounded-xl border text-left text-xs md:text-sm font-semibold transition flex items-center justify-between ';
+                
+                if (userAns !== undefined) {
+                    btn.disabled = true;
+                    if (optIdx === q.correct) {
+                        btn.className += 'bg-emerald-950/80 border-emerald-500 text-emerald-200';
+                    } else if (userAns.selected === optIdx) {
+                        btn.className += 'bg-rose-950/80 border-rose-500 text-rose-200';
+                    } else {
+                        btn.className += 'bg-slate-900/40 border-slate-800 text-slate-500 opacity-60';
+                    }
+                } else {
+                    btn.className += 'bg-slate-900/90 border-slate-700/80 hover:border-blue-500/80 hover:bg-slate-800 text-slate-200 active:scale-[0.99]';
+                    btn.onclick = () => selectPracticeAnswer(optIdx);
+                }
+
+                btn.innerHTML = `<span>${escapeHTML(optText)}</span>`;
+                if (userAns !== undefined) {
+                    if (optIdx === q.correct) btn.innerHTML += '<span class="text-emerald-400 font-bold ml-2">✓ 正解</span>';
+                    else if (userAns.selected === optIdx) btn.innerHTML += '<span class="text-rose-400 font-bold ml-2">✗ 不正解</span>';
+                }
+                optionsContainer.appendChild(btn);
+            });
+
+            // Explanation
+            const expEl = document.getElementById('practice-explanation');
+            if (userAns !== undefined) {
+                expEl.classList.remove('hidden');
+                if (userAns.isCorrect) {
+                    expEl.className = 'rounded-xl p-3 border text-xs md:text-sm mt-3 bg-emerald-950/60 border-emerald-800/80 text-emerald-200';
+                    expEl.innerHTML = `<div class="font-bold text-emerald-400 mb-1">🎉 正解！</div>${escapeHTML(q.explanation)}`;
+                } else {
+                    expEl.className = 'rounded-xl p-3 border text-xs md:text-sm mt-3 bg-rose-950/60 border-rose-800/80 text-rose-200';
+                    expEl.innerHTML = `<div class="font-bold text-rose-400 mb-1">❌ 不正解... (正解: ${q.options[q.correct]})</div>${escapeHTML(q.explanation)}`;
+                }
+            } else {
+                expEl.classList.add('hidden');
+            }
         }
 
-        function handlePracticeAnswer(optIdx) {
-            clearPracticeAutoNextTimer();
-            if (state.practice.answers[state.practice.currentIndex] !== undefined) return;
-
+        function selectPracticeAnswer(optIdx) {
             const q = state.practice.questions[state.practice.currentIndex];
-            state.practice.answers[state.practice.currentIndex] = optIdx;
+            const isCorrect = (optIdx === q.correct);
 
-            const isCorrect = optIdx === q.correct;
+            state.practice.answers[state.practice.currentIndex] = { selected: optIdx, isCorrect };
+
+            // Record global stats
             state.userData.totalAnswered++;
-            if (isCorrect) state.userData.correctCount++;
+            if (isCorrect) {
+                state.userData.correctCount++;
+                // Remove from wrong ids if present
+                state.userData.wrongQuestionIds = state.userData.wrongQuestionIds.filter(id => id !== q.id);
+            } else {
+                if (!state.userData.wrongQuestionIds.includes(q.id)) {
+                    state.userData.wrongQuestionIds.push(q.id);
+                }
+            }
 
+            // Category stats
             if (!state.userData.categoryStats[q.category]) {
                 state.userData.categoryStats[q.category] = { answered: 0, correct: 0 };
             }
             state.userData.categoryStats[q.category].answered++;
             if (isCorrect) state.userData.categoryStats[q.category].correct++;
 
-            if (!isCorrect) {
-                addWeakQuestion(q.id);
-            } else if (state.practice.mode === 'weak') {
-                removeWeakQuestion(q.id);
-            }
-
             saveUserData();
             renderPracticeQuestion();
 
-            const autoNextToggle = document.getElementById('practice-auto-next-toggle');
-            if (autoNextToggle && autoNextToggle.checked) {
-                if (state.practice.currentIndex < state.practice.questions.length - 1) {
-                    state.practiceAutoNextTimer = setTimeout(() => {
-                        nextPracticeQuestion();
-                    }, 1200);
-                }
-            }
-        }
-
-        function nextPracticeQuestion() {
-            clearPracticeAutoNextTimer();
-            if (state.practice.currentIndex < state.practice.questions.length - 1) {
-                state.practice.currentIndex++;
-                renderPracticeQuestion();
+            // Auto next
+            const autoNext = document.getElementById('practice-auto-next-toggle').checked;
+            if (autoNext && state.practice.currentIndex < state.practice.questions.length - 1) {
+                state.practiceAutoNextTimer = setTimeout(() => {
+                    nextPracticeQuestion();
+                }, 1500);
             }
         }
 
         function prevPracticeQuestion() {
-            clearPracticeAutoNextTimer();
             if (state.practice.currentIndex > 0) {
                 state.practice.currentIndex--;
+                renderPracticeQuestion();
+            }
+        }
+
+        function nextPracticeQuestion() {
+            if (state.practice.currentIndex < state.practice.questions.length - 1) {
+                state.practice.currentIndex++;
                 renderPracticeQuestion();
             }
         }
@@ -1029,7 +971,7 @@
             const q = state.practice.questions[state.practice.currentIndex];
             if (!q) return;
             const idx = state.userData.bookmarks.indexOf(q.id);
-            if (idx > -1) {
+            if (idx >= 0) {
                 state.userData.bookmarks.splice(idx, 1);
             } else {
                 state.userData.bookmarks.push(q.id);
@@ -1038,133 +980,16 @@
             renderPracticeQuestion();
         }
 
-        // --- BOOKMARKS TAB ---
-        function renderBookmarks() {
-            const container = document.getElementById('bookmarks-list-container');
-            const badgeCount = document.getElementById('bookmark-badge-count');
-            if (!container) return;
-
-            const bmQuestions = QUESTIONS.filter(q => state.userData.bookmarks.includes(q.id));
-            if (badgeCount) badgeCount.textContent = `${bmQuestions.length} 件`;
-
-            if (bmQuestions.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 text-center space-y-3">
-                        <div class="text-3xl">🔖</div>
-                        <p class="text-slate-400 text-sm">ブックマークされた問題はありません。</p>
-                        <p class="text-slate-500 text-xs">問題演習時に「ブックマーク保存」を押すとこちらにリスト化されます。</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = bmQuestions.map(q => `
-                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="px-2.5 py-0.5 bg-purple-950 text-purple-300 border border-purple-800/60 font-bold text-[10px] rounded-full">
-                            ${escapeHTML(CATEGORIES[q.category] || q.category)}
-                        </span>
-                        <button onclick="removeBookmark(${q.id})" class="text-xs text-rose-400 hover:text-rose-300 font-medium">
-                            削除
-                        </button>
-                    </div>
-                    <h4 class="font-bold text-slate-100 text-sm md:text-base">${escapeHTML(q.question)}</h4>
-                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700/60 text-xs space-y-1">
-                        <p class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</p>
-                        <p class="text-slate-300 leading-relaxed">${escapeHTML(q.explanation)}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function removeBookmark(id) {
-            const idx = state.userData.bookmarks.indexOf(id);
-            if (idx > -1) {
-                state.userData.bookmarks.splice(idx, 1);
-                saveUserData();
-                renderBookmarks();
-            }
-        }
-
-        // --- FLASHCARDS TAB ---
-        function initFlashcards() {
-            state.flashcards.activeList = FLASHCARDS.filter(c => !state.userData.masteredCards.includes(c.id));
-            state.flashcards.currentIndex = 0;
-            state.flashcards.isFlipped = false;
-            renderFlashcard();
-        }
-
-        function renderFlashcard() {
-            const list = state.flashcards.activeList;
-            const counter = document.getElementById('flashcard-counter');
-            const cardEl = document.getElementById('flashcard');
-
-            if (!cardEl) return;
-            cardEl.style.transform = state.flashcards.isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
-
-            if (list.length === 0) {
-                if (counter) counter.textContent = '完了';
-                document.getElementById('card-tag').textContent = '完全制覇';
-                document.getElementById('card-term').textContent = '🎉 全ての単語を暗記しました！';
-                document.getElementById('card-definition').textContent = '素晴らしい成果です。「暗記済をリセット」を押すと再挑戦できます。';
-                return;
-            }
-
-            if (counter) counter.textContent = `${state.flashcards.currentIndex + 1} / ${list.length}`;
-            const current = list[state.flashcards.currentIndex];
-
-            document.getElementById('card-tag').textContent = current.category;
-            document.getElementById('card-term').textContent = current.term;
-            document.getElementById('card-definition').textContent = current.def;
-        }
-
-        function handleFlashcardClick(e) {
-            state.flashcards.isFlipped = !state.flashcards.isFlipped;
-            renderFlashcard();
-        }
-
-        function nextCard() {
-            if (state.flashcards.activeList.length === 0) return;
-            state.flashcards.isFlipped = false;
-            state.flashcards.currentIndex = (state.flashcards.currentIndex + 1) % state.flashcards.activeList.length;
-            renderFlashcard();
-        }
-
-        function prevCard() {
-            if (state.flashcards.activeList.length === 0) return;
-            state.flashcards.isFlipped = false;
-            state.flashcards.currentIndex = (state.flashcards.currentIndex - 1 + state.flashcards.activeList.length) % state.flashcards.activeList.length;
-            renderFlashcard();
-        }
-
-        function toggleCardMastered() {
-            if (state.flashcards.activeList.length === 0) return;
-            const current = state.flashcards.activeList[state.flashcards.currentIndex];
-            if (!state.userData.masteredCards.includes(current.id)) {
-                state.userData.masteredCards.push(current.id);
-                saveUserData();
-            }
-            initFlashcards();
-        }
-
-        function resetMasteredCards() {
-            if (confirm('暗記済みカードの記録を初期化して、すべての単語を再表示しますか？')) {
-                state.userData.masteredCards = [];
-                saveUserData();
-                initFlashcards();
-            }
-        }
-
-        // --- EXAM TAB ---
+        // --- EXAM MODE ---
         function startExam() {
-            document.getElementById('exam-intro').classList.add('hidden');
-            document.getElementById('exam-result').classList.add('hidden');
-            document.getElementById('exam-active').classList.remove('hidden');
-
             state.exam.questions = shuffleArray(QUESTIONS).slice(0, 25);
             state.exam.currentIndex = 0;
             state.exam.answers = {};
-            state.exam.timeLeft = 2700; 
+            state.exam.timeLeft = 2700; // 45 min
+
+            document.getElementById('exam-intro').classList.add('hidden');
+            document.getElementById('exam-result').classList.add('hidden');
+            document.getElementById('exam-active').classList.remove('hidden');
 
             if (state.exam.timer) clearInterval(state.exam.timer);
             state.exam.timer = setInterval(updateExamTimer, 1000);
@@ -1175,73 +1000,78 @@
 
         function updateExamTimer() {
             state.exam.timeLeft--;
-            const mins = Math.floor(state.exam.timeLeft / 60);
-            const secs = state.exam.timeLeft % 60;
-            const timerEl = document.getElementById('exam-timer');
-            if (timerEl) {
-                timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }
+            const m = Math.floor(state.exam.timeLeft / 60);
+            const s = state.exam.timeLeft % 60;
+            document.getElementById('exam-timer').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 
             if (state.exam.timeLeft <= 0) {
                 clearInterval(state.exam.timer);
-                alert('制限時間（45分）が経過しました。採点を開始します。');
                 finishExam();
             }
         }
 
         function renderExamQuestion() {
-            window.scrollTo(0, 0);
             const q = state.exam.questions[state.exam.currentIndex];
-            if (!q) return;
+            const curIdx = state.exam.currentIndex;
 
-            document.getElementById('exam-progress-indicator').textContent = `問題 ${state.exam.currentIndex + 1} / 25`;
+            document.getElementById('exam-progress-indicator').textContent = `問題 ${curIdx + 1} / 25`;
             document.getElementById('exam-question-text').textContent = q.question;
-
-            const progressBar = document.getElementById('exam-progress-bar');
-            if (progressBar) {
-                progressBar.style.width = `${((state.exam.currentIndex + 1) / 25) * 100}%`;
-            }
+            document.getElementById('exam-progress-bar').style.width = `${((curIdx + 1) / 25) * 100}%`;
 
             const optionsContainer = document.getElementById('exam-options');
-            const selectedIdx = state.exam.answers[state.exam.currentIndex];
+            optionsContainer.innerHTML = '';
 
-            optionsContainer.innerHTML = q.options.map((opt, idx) => {
-                const isSelected = selectedIdx === idx;
-                const btnStyle = isSelected 
-                    ? "bg-blue-600 border-blue-400 text-white font-bold shadow-lg shadow-blue-600/30" 
-                    : "bg-slate-900 border-slate-700 text-slate-200 hover:border-slate-500";
-                return `
-                    <button onclick="selectExamAnswer(${idx})" class="question-option w-full p-4 rounded-xl border text-left text-sm font-medium transition flex items-center justify-between ${btnStyle}">
-                        <span>${escapeHTML(opt)}</span>
-                        ${isSelected ? '<span>L</span>' : ''}
-                    </button>
-                `;
-            }).join('');
+            const selectedOpt = state.exam.answers[curIdx];
 
-            const prevBtn = document.getElementById('exam-prev-btn');
-            const nextBtn = document.getElementById('exam-next-btn');
-            if (prevBtn) prevBtn.disabled = state.exam.currentIndex === 0;
-            if (nextBtn) {
-                nextBtn.textContent = state.exam.currentIndex === 24 ? '最終確認へ ▶' : '次へ ▶';
-            }
+            q.options.forEach((optText, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'question-option w-full p-4 rounded-xl border text-left text-sm font-semibold transition flex items-center justify-between ';
+                if (selectedOpt === optIdx) {
+                    btn.className += 'bg-blue-950/90 border-blue-500 text-white shadow-md shadow-blue-500/10';
+                } else {
+                    btn.className += 'bg-slate-900 border-slate-700/80 hover:bg-slate-800 text-slate-200';
+                }
+                btn.onclick = () => {
+                    state.exam.answers[curIdx] = optIdx;
+                    renderExamQuestion();
+                    renderExamGrid();
+                };
+                btn.innerHTML = `<span>${escapeHTML(optText)}</span>`;
+                optionsContainer.appendChild(btn);
+            });
 
-            const summaryEl = document.getElementById('exam-answered-summary');
-            if (summaryEl) {
-                summaryEl.textContent = `回答済み: ${Object.keys(state.exam.answers).length} / 25 問`;
+            const answeredCount = Object.keys(state.exam.answers).length;
+            document.getElementById('exam-answered-summary').textContent = `回答済み: ${answeredCount} / 25 問`;
+        }
+
+        function renderExamGrid() {
+            const grid = document.getElementById('exam-question-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const btn = document.createElement('button');
+                const isAnswered = state.exam.answers[i] !== undefined;
+                const isCurrent = i === state.exam.currentIndex;
+
+                btn.className = `p-2 text-xs font-bold rounded-lg border transition ${
+                    isCurrent ? 'border-blue-400 bg-blue-600 text-white' :
+                    isAnswered ? 'border-slate-600 bg-slate-700 text-blue-300' : 'border-slate-800 bg-slate-900 text-slate-500'
+                }`;
+                btn.textContent = i + 1;
+                btn.onclick = () => {
+                    state.exam.currentIndex = i;
+                    renderExamQuestion();
+                    renderExamGrid();
+                };
+                grid.appendChild(btn);
             }
         }
 
-        function selectExamAnswer(optIdx) {
-            state.exam.answers[state.exam.currentIndex] = optIdx;
-            renderExamQuestion();
-            renderExamGrid();
-        }
-
-        function navigateExamQuestion(dir) {
-            const newIndex = state.exam.currentIndex + dir;
-            if (newIndex >= 0 && newIndex < 25) {
-                state.exam.currentIndex = newIndex;
+        function navigateExamQuestion(delta) {
+            const newIdx = state.exam.currentIndex + delta;
+            if (newIdx >= 0 && newIdx < 25) {
+                state.exam.currentIndex = newIdx;
                 renderExamQuestion();
+                renderExamGrid();
             }
         }
 
@@ -1253,42 +1083,10 @@
             }
         }
 
-        function renderExamGrid() {
-            const grid = document.getElementById('exam-question-grid');
-            if (!grid) return;
-
-            grid.innerHTML = Array.from({ length: 25 }).map((_, idx) => {
-                const isAnswered = state.exam.answers[idx] !== undefined;
-                const isCurrent = state.exam.currentIndex === idx;
-                let bgStyle = "bg-slate-900 text-slate-400 border-slate-700";
-
-                if (isCurrent) {
-                    bgStyle = "bg-blue-600 text-white border-blue-400 font-black ring-2 ring-blue-400/50";
-                } else if (isAnswered) {
-                    bgStyle = "bg-blue-950 text-blue-300 border-blue-700 font-bold";
-                }
-
-                return `
-                    <button onclick="jumpToExamQuestion(${idx})" class="py-2 rounded-lg border text-xs text-center transition ${bgStyle}">
-                        ${idx + 1}
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function jumpToExamQuestion(idx) {
-            state.exam.currentIndex = idx;
-            renderExamQuestion();
-        }
-
         function finishExamPrompt() {
-            const unanswered = 25 - Object.keys(state.exam.answers).length;
-            if (unanswered > 0) {
-                if (!confirm(`まだ未回答の問題が ${unanswered} 問あります。模擬試験を終了して採点しますか？`)) {
-                    return;
-                }
-            } else {
-                if (!confirm('模擬試験を終了して採点を行いますか？')) {
+            const answeredCount = Object.keys(state.exam.answers).length;
+            if (answeredCount < 25) {
+                if (!confirm(`まだ未回答の問題が ${25 - answeredCount} 問あります。採点に進みますか？`)) {
                     return;
                 }
             }
@@ -1299,80 +1097,265 @@
             if (state.exam.timer) clearInterval(state.exam.timer);
 
             let score = 0;
+            const categoryResults = {};
+
             state.exam.questions.forEach((q, idx) => {
-                if (state.exam.answers[idx] === q.correct) {
-                    score++;
+                const userAns = state.exam.answers[idx];
+                const isCorrect = (userAns === q.correct);
+                if (isCorrect) score++;
+
+                // Track weak
+                if (!isCorrect) {
+                    if (!state.userData.wrongQuestionIds.includes(q.id)) {
+                        state.userData.wrongQuestionIds.push(q.id);
+                    }
                 } else {
-                    addWeakQuestion(q.id);
+                    state.userData.wrongQuestionIds = state.userData.wrongQuestionIds.filter(id => id !== q.id);
                 }
+
+                // Category stats for exam
+                if (!categoryResults[q.category]) categoryResults[q.category] = { total: 0, correct: 0 };
+                categoryResults[q.category].total++;
+                if (isCorrect) categoryResults[q.category].correct++;
             });
 
-            const percentage = Math.round((score / 25) * 100);
-            const isPassed = percentage >= 70;
-
-            if (state.userData.examHighScore === null || percentage > state.userData.examHighScore) {
-                state.userData.examHighScore = percentage;
+            const scorePoints = score * 4; // 25問 * 4点 = 100点満点
+            if (state.userData.examHighScore === null || scorePoints > state.userData.examHighScore) {
+                state.userData.examHighScore = scorePoints;
             }
+
+            state.userData.totalAnswered += 25;
+            state.userData.correctCount += score;
             saveUserData();
 
+            // Render Results
             document.getElementById('exam-active').classList.add('hidden');
             document.getElementById('exam-result').classList.remove('hidden');
 
             document.getElementById('exam-score-text').textContent = `${score} / 25`;
-            document.getElementById('exam-accuracy-text').textContent = `${percentage}%`;
+            document.getElementById('exam-accuracy-text').textContent = `${scorePoints}点`;
 
+            const isPassed = score >= 18; // 70%
             const badge = document.getElementById('exam-badge');
             const title = document.getElementById('exam-status-title');
-            const subtitle = document.getElementById('exam-status-subtitle');
+            const sub = document.getElementById('exam-status-subtitle');
 
             if (isPassed) {
                 badge.textContent = '🎉';
-                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl bg-emerald-950 border border-emerald-500 shadow-lg shadow-emerald-500/20';
                 title.textContent = '合格ライン達成！';
                 title.className = 'text-2xl font-black text-emerald-400';
-                subtitle.textContent = '素晴らしい成績です！この調子で本番に備えましょう。';
+                sub.textContent = '素晴らしい実績です。この調子で本番に備えましょう！';
             } else {
                 badge.textContent = '💪';
-                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl bg-rose-950 border border-rose-500 shadow-lg shadow-rose-500/20';
-                title.textContent = '不合格 (あと一歩！)';
+                title.textContent = '不合格 (あと ' + (18 - score) + ' 問で合格)';
                 title.className = 'text-2xl font-black text-rose-400';
-                subtitle.textContent = '合格基準は70%（18問以上正解）です。解説を確認して復習しましょう。';
+                sub.textContent = '合格基準は70%（18問以上正解）です。解説を確認して再挑戦しましょう。';
             }
 
+            // Review List
             const reviewList = document.getElementById('exam-review-list');
-            if (reviewList) {
-                reviewList.innerHTML = state.exam.questions.map((q, idx) => {
-                    const userAns = state.exam.answers[idx];
-                    const isCorrect = userAns === q.correct;
-                    return `
-                        <div class="p-4 rounded-xl border ${isCorrect ? 'bg-slate-900/60 border-slate-700/80' : 'bg-rose-950/20 border-rose-900/50'} space-y-2">
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="font-bold text-slate-400">問題 ${idx + 1} (${CATEGORIES[q.category] || q.category})</span>
-                                <span class="${isCorrect ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">
-                                    ${isCorrect ? '⭕ 正解' : '❌ 不正解'}
-                                </span>
-                            </div>
-                            <h4 class="font-bold text-sm text-slate-100">${escapeHTML(q.question)}</h4>
-                            <div class="text-xs space-y-1 bg-slate-950/80 p-3 rounded-lg border border-slate-800">
-                                <p class="text-slate-300">あなたの回答: <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'} font-bold">${userAns !== undefined ? escapeHTML(q.options[userAns]) : '未回答'}</span></p>
-                                <p class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</p>
-                                <p class="text-slate-400 mt-2 pt-2 border-t border-slate-800">${escapeHTML(q.explanation)}</p>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
+            reviewList.innerHTML = '';
+            state.exam.questions.forEach((q, idx) => {
+                const userAns = state.exam.answers[idx];
+                const isCorrect = (userAns === q.correct);
+
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-xl border text-sm space-y-2 ${isCorrect ? 'bg-slate-900/60 border-slate-700' : 'bg-rose-950/20 border-rose-800/60'}`;
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                            問 ${idx + 1} : ${isCorrect ? '✓ 正解' : '✗ 不正解'}
+                        </span>
+                        <span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">${CATEGORIES[q.category]}</span>
+                    </div>
+                    <p class="font-semibold text-slate-200">${escapeHTML(q.question)}</p>
+                    <div class="text-xs text-slate-300 bg-slate-950/80 p-3 rounded-lg space-y-1">
+                        <div><span class="text-slate-400">あなたの回答:</span> ${userAns !== undefined ? escapeHTML(q.options[userAns]) : '未回答'}</div>
+                        <div><span class="text-slate-400">正解:</span> <span class="text-emerald-400 font-bold">${escapeHTML(q.options[q.correct])}</span></div>
+                        <div class="mt-2 text-slate-300 border-t border-slate-800 pt-2">${escapeHTML(q.explanation)}</div>
+                    </div>
+                `;
+                reviewList.appendChild(item);
+            });
         }
 
-        // --- SETTINGS TAB ---
+        // --- BOOKMARKS ---
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarks-list-container');
+            const countBadge = document.getElementById('bookmark-badge-count');
+            container.innerHTML = '';
+
+            const bmIds = state.userData.bookmarks;
+            countBadge.textContent = `${bmIds.length} 件`;
+
+            if (bmIds.length === 0) {
+                container.innerHTML = `<div class="bg-slate-800/40 p-8 rounded-2xl border border-slate-700/60 text-center text-slate-400 text-sm">ブックマークされた問題はありません。</div>`;
+                return;
+            }
+
+            bmIds.forEach(id => {
+                const q = QUESTIONS.find(item => item.id === id);
+                if (!q) return;
+
+                const card = document.createElement('div');
+                card.className = 'bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="px-2.5 py-0.5 bg-blue-950 text-blue-300 border border-blue-800/50 text-xs font-bold rounded-full">${CATEGORIES[q.category]}</span>
+                        <button onclick="removeBookmark(${q.id})" class="text-xs text-rose-400 hover:text-rose-300 font-semibold">削除</button>
+                    </div>
+                    <h4 class="font-bold text-sm text-slate-100">${escapeHTML(q.question)}</h4>
+                    <div class="bg-slate-900/80 p-3 rounded-xl text-xs space-y-1">
+                        <div class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div>
+                        <div class="text-slate-300 mt-1">${escapeHTML(q.explanation)}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function removeBookmark(id) {
+            state.userData.bookmarks = state.userData.bookmarks.filter(bmId => bmId !== id);
+            saveUserData();
+            renderBookmarks();
+        }
+
+        // --- FLASHCARDS ---
+        function initFlashcards() {
+            state.flashcards.activeList = FLASHCARDS.filter(c => !state.userData.masteredCards.includes(c.id));
+            state.flashcards.currentIndex = 0;
+            state.flashcards.isFlipped = false;
+            renderFlashcard();
+        }
+
+        function renderFlashcard() {
+            const cardEl = document.getElementById('flashcard');
+            cardEl.style.transform = state.flashcards.isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+
+            const list = state.flashcards.activeList;
+            const counter = document.getElementById('flashcard-counter');
+
+            if (list.length === 0) {
+                document.getElementById('card-term').textContent = 'すべて暗記達成！';
+                document.getElementById('card-tag').textContent = '完了';
+                document.getElementById('card-definition').textContent = 'すべての単語カードを「暗記済み」に登録しました。リセットボタンから再挑戦できます。';
+                counter.textContent = '0 / 0';
+                return;
+            }
+
+            const c = list[state.flashcards.currentIndex];
+            counter.textContent = `${state.flashcards.currentIndex + 1} / ${list.length}`;
+            document.getElementById('card-tag').textContent = c.category;
+            document.getElementById('card-term').textContent = c.term;
+            document.getElementById('card-definition').textContent = c.def;
+        }
+
+        function handleFlashcardClick(e) {
+            state.flashcards.isFlipped = !state.flashcards.isFlipped;
+            renderFlashcard();
+        }
+
+        function prevCard() {
+            if (state.flashcards.activeList.length === 0) return;
+            state.flashcards.isFlipped = false;
+            state.flashcards.currentIndex = (state.flashcards.currentIndex - 1 + state.flashcards.activeList.length) % state.flashcards.activeList.length;
+            renderFlashcard();
+        }
+
+        function nextCard() {
+            if (state.flashcards.activeList.length === 0) return;
+            state.flashcards.isFlipped = false;
+            state.flashcards.currentIndex = (state.flashcards.currentIndex + 1) % state.flashcards.activeList.length;
+            renderFlashcard();
+        }
+
+        function toggleCardMastered() {
+            const list = state.flashcards.activeList;
+            if (list.length === 0) return;
+
+            const c = list[state.flashcards.currentIndex];
+            if (!state.userData.masteredCards.includes(c.id)) {
+                state.userData.masteredCards.push(c.id);
+                saveUserData();
+            }
+
+            initFlashcards();
+        }
+
+        function resetMasteredCards() {
+            state.userData.masteredCards = [];
+            saveUserData();
+            initFlashcards();
+        }
+
+        // --- WEAK TAB ---
+        function renderWeakTab() {
+            const wrongIds = state.userData.wrongQuestionIds;
+            document.getElementById('weak-total-count').textContent = wrongIds.length;
+
+            const categoriesSet = new Set();
+            wrongIds.forEach(id => {
+                const q = QUESTIONS.find(item => item.id === id);
+                if (q) categoriesSet.add(q.category);
+            });
+            document.getElementById('weak-category-count').textContent = categoriesSet.size;
+
+            const listContainer = document.getElementById('weak-list');
+            listContainer.innerHTML = '';
+
+            if (wrongIds.length === 0) {
+                listContainer.innerHTML = `<div class="bg-slate-800/40 p-8 rounded-2xl border border-slate-700/60 text-center text-slate-400 text-sm">現在、苦手問題として登録されている問題はありません。演習で間違えた問題が自動蓄積されます。</div>`;
+                return;
+            }
+
+            wrongIds.forEach(id => {
+                const q = QUESTIONS.find(item => item.id === id);
+                if (!q) return;
+
+                const card = document.createElement('div');
+                card.className = 'bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="px-2.5 py-0.5 bg-rose-950 text-rose-300 border border-rose-800/50 text-xs font-bold rounded-full">${CATEGORIES[q.category]}</span>
+                        <span class="text-xs text-rose-400 font-bold">要復習</span>
+                    </div>
+                    <h4 class="font-bold text-sm text-slate-100">${escapeHTML(q.question)}</h4>
+                    <div class="bg-slate-900/80 p-3 rounded-xl text-xs space-y-1">
+                        <div class="text-emerald-400 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div>
+                        <div class="text-slate-300 mt-1">${escapeHTML(q.explanation)}</div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function startWeakPractice() {
+            const wrongIds = state.userData.wrongQuestionIds;
+            if (wrongIds.length === 0) {
+                alert('苦手問題が登録されていません。演習等で間違えた問題がここに蓄積されます。');
+                return;
+            }
+
+            state.practice.currentCategory = 'ALL';
+            state.practice.mode = 'weak';
+            state.practice.questions = shuffleArray(QUESTIONS.filter(q => wrongIds.includes(q.id)));
+            state.practice.currentIndex = 0;
+            state.practice.answers = {};
+
+            document.getElementById('practice-mode-label').textContent = '⚠️ 苦手克服集中演習';
+            switchTab('practice');
+            renderPracticeQuestion();
+        }
+
+        // --- SETTINGS & BACKUP ---
         function exportUserData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.userData, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `web3_exam_data_${new Date().toISOString().slice(0, 10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.userData));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `web3_exam_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
         }
 
         function importUserData(event) {
@@ -1385,26 +1368,34 @@
                     const imported = JSON.parse(e.target.result);
                     state.userData = { ...state.userData, ...imported };
                     saveUserData();
-                    alert('データを正常に復元・インポートしました。');
-                    location.reload();
+                    alert('データを正常に復元しました。');
+                    switchTab('dashboard');
                 } catch(err) {
-                    alert('ファイルの読み込みに失敗しました。正しいJSONファイルかご確認ください。');
+                    alert('ファイルの読み込みに失敗しました。有効なJSONファイルか確認してください。');
                 }
             };
             reader.readAsText(file);
         }
 
         function resetUserData() {
-            if (confirm('【警告】すべての学習進捗・正答率・ブックマークが完全消去されます。本当にリセットしますか？')) {
+            if (confirm('すべての学習進捗・ブックマーク・成績データが削除されます。よろしいですか？')) {
                 localStorage.removeItem('web3_master_data');
-                location.reload();
+                state.userData = {
+                    totalAnswered: 0, correctCount: 0, examHighScore: null,
+                    bookmarks: [], masteredCards: [], wrongQuestionIds: [],
+                    categoryStats: {}, examHistory: [],
+                    daily: { date: '', answered: 0 }
+                };
+                saveUserData();
+                alert('データをリセットしました。');
+                switchTab('dashboard');
             }
         }
 
-        // INIT
+        // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
             loadUserData();
-            switchTab('dashboard');
+            renderDashboard();
         });
     </script>
 </body>
