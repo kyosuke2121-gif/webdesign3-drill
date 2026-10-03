@@ -88,6 +88,14 @@
         .progress-track { height: 8px; border-radius: 999px; overflow: hidden; background: rgba(15,23,42,.9); }
         .progress-fill { height: 100%; border-radius: inherit; transition: width .35s ease; }
         .mini-bar { height: 6px; border-radius: 999px; overflow: hidden; background: rgba(15,23,42,.9); }
+        @media (max-width:767px){
+            main{padding-bottom:calc(6.4rem + var(--safe-bottom))!important;scroll-padding-bottom:7rem}
+            .mobile-bottom-nav{min-height:4.9rem;padding-bottom:calc(.55rem + var(--safe-bottom))}
+            #practice-area{padding:1rem!important}
+            .practice-question-nav{position:sticky;bottom:calc(5.25rem + var(--safe-bottom));z-index:25;margin:0 -.25rem;padding:.7rem .25rem .55rem;background:linear-gradient(to bottom,rgba(30,41,59,0),rgba(30,41,59,.98) 30%)}
+            #practice-prev-btn,#practice-next-btn{min-height:52px}
+        }
+        @media (min-width:768px){.practice-question-nav{position:sticky;bottom:.5rem;z-index:15;background:linear-gradient(to bottom,rgba(30,41,59,0),rgba(30,41,59,.97) 30%)}}
     </style>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0f172a">
@@ -117,6 +125,7 @@
                 <button onclick="switchTab('exam')" id="nav-exam" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
                     <span>&#9201;</span> 模擬試験（25問抽出）
                 </button>
+                <button onclick="switchTab('weak')" id="nav-weak" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"><span>&#9888;</span> 苦手問題 <span id="weak-nav-badge" class="ml-auto hidden text-[10px] bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full">0</span></button>
                 <button onclick="switchTab('bookmarks')" id="nav-bookmarks" class="nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
                     <span>&#128209;</span> ブックマークノート
                 </button>
@@ -221,6 +230,10 @@
                 <div class="flex items-center justify-between gap-3">
                     <span id="practice-mode-label" class="text-[11px] font-black uppercase text-slate-500">通常演習</span>
                     <span id="practice-session-score" class="text-[11px] font-bold text-slate-500">今回の正答率: --</span>
+                    <label class="inline-flex items-center gap-2 text-[11px] font-bold text-slate-400 bg-slate-900/70 border border-slate-700 rounded-xl px-3 py-2">
+                        <input id="practice-auto-next-toggle" type="checkbox" checked class="accent-blue-500 w-4 h-4">
+                        <span>回答後に自動で次へ</span>
+                    </label>
                 </div>
 
                 <div class="flex items-center justify-between pb-4 border-b border-slate-700/80">
@@ -395,6 +408,24 @@
             </div>
         </section>
 
+        <section id="tab-weak" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-900 p-5 md:p-7 rounded-2xl border border-rose-900/60">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div><span class="text-[11px] font-black text-rose-300">WEAK POINT TRAINING</span>
+                    <h2 class="text-xl md:text-2xl font-black text-white mt-1">苦手問題対策</h2>
+                    <p class="text-xs md:text-sm text-slate-400 mt-2">間違えた問題を自動保存し、苦手分野の傾向を確認できます。</p></div>
+                    <button onclick="startWeakPractice()" id="weak-start-btn" class="tap-target px-5 py-3 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl text-sm">▶ 苦手問題に挑戦</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><div class="text-[11px] text-slate-400">苦手問題</div><div id="weak-total-count" class="text-2xl font-black text-rose-300 mt-1">0</div></div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><div class="text-[11px] text-slate-400">苦手分野</div><div id="weak-category-count" class="text-2xl font-black text-amber-300 mt-1">0</div></div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 col-span-2 md:col-span-1"><div class="text-[11px] text-slate-400">学習サイクル</div><div class="text-sm font-bold text-slate-200 mt-1">間違える → 復習 → 再挑戦</div></div>
+            </div>
+            <div class="bg-slate-800/70 p-5 rounded-2xl border border-slate-700"><h3 class="font-bold text-white mb-4">📊 苦手分野の傾向</h3><div id="weak-category-summary" class="space-y-3"></div></div>
+            <div id="weak-list" class="space-y-4"></div>
+        </section>
+
         <!-- SETTINGS TAB -->
         <section id="tab-settings" class="tab-content hidden space-y-6">
             <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
@@ -418,6 +449,7 @@
         <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center text-blue-400"><span class="text-lg">&#128202;</span><span class="text-[10px] font-bold mt-1">ホーム</span></button>
         <button onclick="switchTab('practice')" id="mobile-nav-practice" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128218;</span><span class="text-[10px] font-bold mt-1">問題集</span></button>
         <button onclick="switchTab('exam')" id="mobile-nav-exam" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9201;</span><span class="text-[10px] font-bold mt-1">模試</span></button>
+        <button onclick="switchTab('weak')" id="mobile-nav-weak" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9888;</span><span class="text-[10px] font-bold mt-1">苦手</span></button>
         <button onclick="switchTab('bookmarks')" id="mobile-nav-bookmarks" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128209;</span><span class="text-[10px] font-bold mt-1">保存</span></button>
         <button onclick="switchTab('flashcards')" id="mobile-nav-flashcards" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#128214;</span><span class="text-[10px] font-bold mt-1">単語帳</span></button>
         <button onclick="switchTab('settings')" id="mobile-nav-settings" class="mobile-nav-btn flex flex-col items-center text-slate-400"><span class="text-lg">&#9881;</span><span class="text-[10px] font-bold mt-1">設定</span></button>
@@ -606,7 +638,7 @@
             },
             practice: { currentCategory: 'ALL', questions: [], currentIndex: 0, answers: {}, mode: 'normal' },
             exam: { questions: [], currentIndex: 0, answers: {}, timer: null, timeLeft: 2700 },
-            flashcards: { activeList: [], currentIndex: 0, isFlipped: false }
+            flashcards: { activeList: [], currentIndex: 0, isFlipped: false }, practiceAutoNextTimer: null
         };
 
         function loadUserData() {
@@ -622,13 +654,38 @@
             state.userData.wrongQuestionIds = Array.isArray(state.userData.wrongQuestionIds) ? state.userData.wrongQuestionIds : [];
             state.userData.categoryStats = state.userData.categoryStats || {};
             state.userData.examHistory = Array.isArray(state.userData.examHistory) ? state.userData.examHistory : [];
-            updateDashboardStats();
+            updateDashboardStats(); updateWeakUI();
         }
 
         function saveUserData() {
             localStorage.setItem('web3_master_data', JSON.stringify(state.userData));
             updateDashboardStats();
         }
+
+        function clearPracticeAutoNextTimer(){if(state.practiceAutoNextTimer){clearTimeout(state.practiceAutoNextTimer);state.practiceAutoNextTimer=null;}}
+        function updateWeakUI(){
+            const ids=Array.isArray(state.userData.wrongQuestionIds)?state.userData.wrongQuestionIds:[];
+            state.userData.wrongQuestionIds=[...new Set(ids.filter(id=>QUESTIONS.some(q=>q.id===id)))];
+            const n=state.userData.wrongQuestionIds.length;
+            ['weak-nav-badge','weak-total-count'].forEach(id=>{const e=document.getElementById(id);if(e){e.textContent=n;e.classList.toggle('hidden',n===0)}})
+        }
+        function addWeakQuestion(id){if(!state.userData.wrongQuestionIds.includes(id))state.userData.wrongQuestionIds.push(id)}
+        function removeWeakQuestion(id){state.userData.wrongQuestionIds=state.userData.wrongQuestionIds.filter(x=>x!==id);saveUserData();renderWeakScreen()}
+        function renderWeakScreen(){
+            updateWeakUI(); const qs=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id));
+            const list=document.getElementById('weak-list'), sum=document.getElementById('weak-category-summary'), cc=document.getElementById('weak-category-count'), b=document.getElementById('weak-start-btn');
+            if(!list||!sum)return; if(cc)cc.textContent=new Set(qs.map(q=>q.category)).size; if(b)b.disabled=!qs.length;
+            if(!qs.length){sum.innerHTML='<div class="text-sm text-slate-400 p-4 bg-slate-900/50 rounded-xl">まだ苦手問題はありません。問題集で間違えた問題が自動追加されます。</div>';list.innerHTML='<div class="p-8 text-center bg-slate-800/50 rounded-2xl border border-slate-700 text-slate-500 text-sm">まず問題集に挑戦してみましょう。</div>';return}
+            const counts={};qs.forEach(q=>counts[q.category]=(counts[q.category]||0)+1);
+            sum.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div><div class="flex justify-between text-xs mb-1"><span class="text-slate-300 font-semibold">${escapeHTML(CATEGORIES[c]||c)}</span><span class="text-rose-300 font-black">${n}問</span></div><div class="mini-bar"><div class="progress-fill bg-rose-500" style="width:${Math.round(n/qs.length*100)}%"></div></div></div>`).join('');
+            list.innerHTML=qs.map(q=>`<div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3"><div class="flex justify-between"><span class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800/60 text-[10px] font-bold rounded-full">${escapeHTML(CATEGORIES[q.category]||q.category)}</span><button onclick="removeWeakQuestion(${q.id})" class="text-xs text-slate-500">苦手から外す</button></div><p class="font-bold text-slate-100 text-sm">${escapeHTML(q.question)}</p><div class="text-xs bg-slate-900/80 p-3 rounded-xl"><div class="text-emerald-300 font-bold">正解: ${escapeHTML(q.options[q.correct])}</div><p class="text-slate-400 mt-1">${escapeHTML(q.explanation)}</p></div></div>`).join('');
+        }
+        function startWeakPractice(){
+            clearPracticeAutoNextTimer();const pool=QUESTIONS.filter(q=>state.userData.wrongQuestionIds.includes(q.id)).sort(()=>Math.random()-.5);
+            if(!pool.length){alert('現在、苦手問題はありません。まず問題集で間違えた問題を作ってください。');return}
+            state.practice.mode='weak';state.practice.currentCategory='WEAK';state.practice.questions=pool;state.practice.currentIndex=0;state.practice.answers={};switchTab('practice');renderPracticeQuestion();window.scrollTo({top:0,behavior:'smooth'});
+        }
+        function scrollPracticeToTop(){const m=document.querySelector('main');if(m)m.scrollTo({top:0,behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'})}
 
         function switchTab(tabId) {
             state.activeTab = tabId;
@@ -656,13 +713,17 @@
                 activeMobileNav.classList.add('text-blue-400');
             }
 
+            clearPracticeAutoNextTimer();
             if (tabId === 'practice' && state.practice.questions.length === 0) {
                 startPracticeSession('normal');
+            } else if (tabId === 'weak') {
+                renderWeakScreen();
             } else if (tabId === 'bookmarks') {
                 renderBookmarksList();
             } else if (tabId === 'flashcards') {
                 initFlashcards();
             }
+            if(window.matchMedia('(max-width:767px)').matches) requestAnimationFrame(scrollPracticeToTop);
         }
 
         function updateDashboardStats() {
@@ -728,6 +789,7 @@
             if (!qList || qList.length === 0) return;
 
             const q = qList[state.practice.currentIndex];
+            document.getElementById('practice-mode-label').innerText = state.practice.mode==='weak' ? '苦手問題対策' : '通常演習';
             document.getElementById('practice-category-badge').innerText = CATEGORIES[q.category] || '全般';
             document.getElementById('practice-progress-text').innerText = `問題 ${state.practice.currentIndex + 1} / ${qList.length}`;
             document.getElementById('practice-type-tag').innerText = q.type === 'tf' ? '○×形式' : '四肢択一';
@@ -770,21 +832,18 @@
         }
 
         function answerPractice(index) {
-            const q = state.practice.questions[state.practice.currentIndex];
-            if (!q || state.practice.answers[q.id] !== undefined) return;
-
-            state.practice.answers[q.id] = index;
-            state.userData.totalAnswered++;
-            const isCorrect = index === q.correct;
-            if (isCorrect) state.userData.correctCount++;
-
-            const cat = q.category;
-            if (!state.userData.categoryStats[cat]) state.userData.categoryStats[cat] = {answered:0, correct:0};
-            state.userData.categoryStats[cat].answered++;
-            if (isCorrect) state.userData.categoryStats[cat].correct++;
-
-            saveUserData();
-            renderPracticeQuestion();
+            const q=state.practice.questions[state.practice.currentIndex];
+            if(!q||state.practice.answers[q.id]!==undefined)return;
+            clearPracticeAutoNextTimer(); state.practice.answers[q.id]=index; state.userData.totalAnswered++;
+            const ok=index===q.correct; if(ok)state.userData.correctCount++;
+            const cat=q.category;if(!state.userData.categoryStats[cat])state.userData.categoryStats[cat]={answered:0,correct:0};
+            state.userData.categoryStats[cat].answered++;if(ok)state.userData.categoryStats[cat].correct++;
+            if(ok)removeWeakQuestion(q.id);else addWeakQuestion(q.id);
+            saveUserData();renderPracticeQuestion();updateWeakUI();
+            const t=document.getElementById('practice-auto-next-toggle');
+            if(t&&t.checked&&state.practice.currentIndex<state.practice.questions.length-1){
+                state.practiceAutoNextTimer=setTimeout(()=>{state.practiceAutoNextTimer=null;nextPracticeQuestion(true)},ok?650:1150);
+            }
         }
 
         function toggleBookmarkCurrentPractice() {
@@ -797,19 +856,8 @@
             renderPracticeQuestion();
         }
 
-        function prevPracticeQuestion() {
-            if (state.practice.currentIndex > 0) {
-                state.practice.currentIndex--;
-                renderPracticeQuestion();
-            }
-        }
-
-        function nextPracticeQuestion() {
-            if (state.practice.currentIndex < state.practice.questions.length - 1) {
-                state.practice.currentIndex++;
-                renderPracticeQuestion();
-            }
-        }
+        function prevPracticeQuestion(){clearPracticeAutoNextTimer();if(state.practice.currentIndex>0){state.practice.currentIndex--;renderPracticeQuestion();if(window.matchMedia('(max-width:767px)').matches)requestAnimationFrame(scrollPracticeToTop)}}
+        function nextPracticeQuestion(){clearPracticeAutoNextTimer();if(state.practice.currentIndex<state.practice.questions.length-1){state.practice.currentIndex++;renderPracticeQuestion();if(window.matchMedia('(max-width:767px)').matches)requestAnimationFrame(scrollPracticeToTop)}}
 
         document.getElementById('practice-category-select').addEventListener('change', () => {
             startPracticeSession();
@@ -1220,7 +1268,7 @@
         window.onload = function() {
             loadUserData();
             switchTab('dashboard');
-            setupFlashcardSwipe();
+            setupFlashcardSwipe(); updateWeakUI();
         };
     </script>
 </body>
