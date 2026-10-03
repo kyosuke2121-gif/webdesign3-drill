@@ -300,6 +300,64 @@
 }
 </style>
 
+
+<style id="mobile-practice-question-fit-fix">
+@media (max-width: 767px) {
+  /* Cancel Tailwind space-y margins inside the fixed practice card. */
+  main:has(#tab-practice:not(.hidden)) #practice-area > * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-area {
+    gap: 0 !important;
+  }
+
+  /* Let the complete question text determine its own height.
+     The previous percentage max-height was clipping the second/third line. */
+  main:has(#tab-practice:not(.hidden)) #practice-question-text {
+    display: block !important;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: .15rem 0 .55rem !important;
+    font-size: clamp(.92rem, 4.25vw, 1.05rem) !important;
+    line-height: 1.55 !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-type-tag {
+    flex: 0 0 auto !important;
+    margin: 0 0 .25rem !important;
+  }
+
+  /* Give the four choices the remaining space. */
+  main:has(#tab-practice:not(.hidden)) #practice-options {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) #practice-options > button {
+    margin: 0 !important;
+  }
+
+  /* Slightly tighter choices so four long choices fit more often without
+     requiring an inner scroll. */
+  main:has(#tab-practice:not(.hidden)) #practice-options .question-option {
+    padding: .58rem .68rem !important;
+    line-height: 1.4 !important;
+  }
+
+  main:has(#tab-practice:not(.hidden)) .practice-question-nav {
+    margin-top: .45rem !important;
+  }
+}
+</style>
+
 </head>
 <body class="min-h-screen flex flex-col md:flex-row bg-slate-900 text-slate-100">
 
