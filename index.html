@@ -70,8 +70,6 @@
                 margin-top: 1rem;
                 margin-bottom: 1rem;
             }
-        }
-        @media (max-width: 767px) {
             .question-option { min-height: 62px; font-size: .95rem; }
             #practice-question-text, #exam-question-text { font-size: 1.08rem; line-height: 1.8; }
         }
@@ -205,7 +203,7 @@
     display: flex;
     flex-direction: column;
     gap: 0 !important;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   main:has(#tab-practice:not(.hidden)) #practice-area > div:nth-child(1),
@@ -224,20 +222,15 @@
   main:has(#tab-practice:not(.hidden)) #practice-question-text {
     flex: 0 0 auto;
     margin: 0 0 .55rem;
-    max-height: 31%;
-    overflow-y: auto;
     font-size: 1.02rem !important;
     line-height: 1.55 !important;
   }
 
   main:has(#tab-practice:not(.hidden)) #practice-options {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     gap: .45rem !important;
-    overscroll-behavior: contain;
     padding-right: .05rem;
   }
 
@@ -253,7 +246,6 @@
     line-height: 1.45;
   }
 
-  /* 【問題2修正】スマホでも正誤・解説フィードバックを表示可能にする */
   main:has(#tab-practice:not(.hidden)) #practice-explanation {
     display: block;
     margin-top: 0.5rem;
@@ -300,8 +292,6 @@
     flex: 0 0 auto !important;
     height: auto !important;
     min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
     margin: .15rem 0 .55rem !important;
     font-size: clamp(.92rem, 4.25vw, 1.05rem) !important;
     line-height: 1.55 !important;
@@ -313,10 +303,7 @@
   }
 
   main:has(#tab-practice:not(.hidden)) #practice-options {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    height: auto !important;
-    overflow-y: auto !important;
+    flex: 0 0 auto !important;
     margin: 0 !important;
   }
 
@@ -831,776 +818,737 @@
             { term: "SQLインジェクション", category: "セキュリティ", def: "入力値に不正なSQL文を挿入することで、データベースを不正に読み出したり破壊・改ざんしたりする攻撃手法。" },
             { term: "常時SSL", category: "セキュリティ", def: "特定フォームだけでなく、Webサイト全体の全ページをHTTPS化（暗号化）するセキュリティ施策。" },
             { term: "ソーシャルエンジニアリング", category: "セキュリティ", def: "人間の不注意や心理的隙（画面の盗み見、ゴミ箱の物色、成りすまし電話など）を突いてパスワード等を奪う手法。" },
-            { term: "無方式主義", category: "権利・法規", def: "著作権は作品を創作した時点で手続きなしに自動的に発生するという原則（日本の著作権法で採用）。" },
-            { term: "引用の要件", category: "権利・法規", def: "公表された著作物であること、主従関係が明確であること、区分が明瞭であること、出典が明記されていること等の条件。" },
-            { term: "オプトイン方式", category: "権利・法規", def: "特定電子メール法等において、事前に対象者の明確な同意を得た場合のみメール送信を認める仕組み。" },
-            { term: "肖像権", category: "権利・法規", def: "自分の容姿や顔写真を無断で撮影されたり、公表・利用されたりしないように保護する法的権利。" },
-            { term: "商標権", category: "権利・法規", def: "自社の商品・サービスを表す文字やロゴマークを独占的に使用・保護するための知的財産権。" },
-            { term: "DNS", category: "Web基礎", def: "ドメイン名（example.com）とIPアドレス（192.0.2.1）を相互に変換（名前解決）するシステム。" },
-            { term: "CDN", category: "Web基礎", def: "世界中に分散されたサーバ群から画像やスクリプトを最適配信し、Webサイト表示速度を高めるネットワーク。" },
-            { term: "Cookie", category: "Web基礎", def: "Webサーバがブラウザ側に保存させる小さなテキストデータ。ログイン状態やセッション管理に利用される。" },
-            { term: "IMAP", category: "Web基礎", def: "電子メールを端末にダウンロードせず、メールサーバ上で閲覧・管理する受信プロトコル。" },
-            { term: "クローラー", category: "Web基礎", def: "検索エンジンがインターネット上を巡回してWebページの情報を自動収集・インデックス化するプログラム。" },
-            { term: "色の三属性", category: "カラー・UI", def: "「色相（色味）」「明度（明るさ）」「彩度（鮮やかさ）」の3つの要素。" },
-            { term: "RGB / CMYK", category: "カラー・UI", def: "RGBは光の三原色（加法混色・画面用）、CMYKは色料の三原色+黒（減法混色・印刷用）。" },
-            { term: "補色", category: "カラー・UI", def: "色相環で正反対の位置に配置されている色同士の組み合わせ。対比が強く互いを引き立てる。" },
-            { term: "カーニング", category: "カラー・UI", def: "文字同士の間隔を美しく視認しやすく調整するタイポグラフィ処理。" },
-            { term: "Zパターン / Fパターン", category: "カラー・UI", def: "ユーザーがWeb画面を閲覧する際、視線が自然に移動する視線誘導の法則。" },
-            { term: "SVG", category: "画像・実技", def: "ベクター形式のWeb画像フォーマット。拡大縮小しても画質が一切劣化しない。" },
-            { term: "PNG", category: "画像・実技", def: "可逆圧縮で透明・半透明（アルファチャンネル）に対応した標準的な画像フォーマット。" },
-            { term: "ワイヤーフレーム", category: "設計・制作", def: "制作初期段階でページの要素配置や画面レイアウトの構成案をシンプルに可視化した設計図。" },
-            { term: "ペルソナ", category: "設計・制作", def: "Webサイトやサービスのターゲットとなる架空の典型的なユーザー像（年齢・職種・行動特性等）。" },
-            { term: "Git", category: "開発・実技", def: "ソースコードの変更履歴を記録・管理・分岐・統合できる分散型バージョン管理システム。" },
-            { term: "セマンティックWeb", category: "HTML/CSS", def: "文書の意味や構造をコンピュータが理解できるようにタグ付けを行う考え方（article, nav等）。" },
-            { term: "Flexbox", category: "HTML/CSS", def: "CSSの1次元レイアウト手法。要素の整列や均等配置、中央揃えを簡潔に指定できる。" },
-            { term: "メディアクエリ", category: "HTML/CSS", def: "@mediaを用いて画面幅や端末条件に応じたスタイルの切替（レスポンシブデザイン）を行うCSS仕様。" },
-            { term: "rem", category: "HTML/CSS", def: "ルート要素（htmlタグ）のフォントサイズを「1」とした相対的なCSS単位。" },
-            { term: "Viewport", category: "HTML/CSS", def: "モバイル端末の画面表示幅を設定するmetaタグ属性（width=device-width等）。" },
-            { term: "ベーシック認証", category: "セキュリティ", def: "HTTPの簡易的な認証方式。IDとパスワードがBase64エンコードされるためHTTPSとの併用が必須。" },
-            { term: "ゼロデイ攻撃", category: "セキュリティ", def: "ソフトウェアの脆弱性が発見されてから対策パッチが公開される前に行われるサイバー攻撃。" },
-            { term: "CCライセンス", category: "権利・法規", def: "原作者が著作物の再利用条件（BY:表示、NC:非営利、ND:改変禁止、SA:継承）を明示する標準規格。" },
-            { term: "SEO", category: "マーケティング", def: "検索エンジンの検索結果において自社サイトを上位表示させるための最適化施策。" },
-            { term: "Favicon", category: "Web基礎", def: "ブラウザのタブやブックマーク一覧に表示されるWebサイト独自のシンボルアイコン。" }
+            { term: "無方式主義", category: "関連法規・著作権", def: "著作権は作品の創作と同時に自然発生し、登録や出願などの手続きを一切必要としないとする原則。" },
+            { term: "著作権の保護期間", category: "関連法規・著作権", def: "原則として著作者の死後70年間保護される（法改正により50年から延長）。" },
+            { term: "CCライセンス", category: "関連法規・著作権", def: "クリエイティブ・コモンズが提供する著作権表示の標準意思表示システム（BY, NC, ND, SAなど）。" },
+            { term: "個人情報保護法", category: "関連法規・著作権", def: "生存する個人に関する情報（氏名、生年月日、顔写真等により特定個人を識別できるもの）を適切に取り扱うための法律。" },
+            { term: "オプトイン方式", category: "関連法規・著作権", def: "特定電子メール法において、事前に対象者の同意を得た場合のみメール送信を許可する方式。" },
+            { term: "DNS", category: "Web基礎知識", def: "Domain Name System。IPアドレスと人間が理解しやすいドメイン名を相互変換（名前解決）する仕組み。" },
+            { term: "HTTP/404", category: "Web基礎知識", def: "クライアントのリクエストしたリソースがWebサーバ上に見つからないことを示すステータスコード。" },
+            { term: "W3C", category: "Web基礎知識", def: "World Wide Web Consortium。Web標準規格（HTML, CSS, WCAG等）の標準化を行う国際的な非営利団体。" },
+            { term: "CDN", category: "Web基礎知識", def: "Content Delivery Network。世界中に分散配置されたサーバから静的コンテンツを高速配信する仕組み。" },
+            { term: "Cookie", category: "Web基礎知識", def: "Webサーバがブラウザ側に保存させる小さなデータテキスト。ログイン状態の維持等に利用される。" },
+            { term: "セマンティックWeb", category: "HTML/CSS", def: "文書の意味構造を明確にし、コンピュータが効率的に情報を処理・検索できるようにするWebの設計思想。" },
+            { term: "rem", category: "HTML/CSS", def: "root em。ルート要素（htmlタグ）のフォントサイズを基準としたCSSの相対単位。" },
+            { term: "Flexbox", category: "HTML/CSS", def: "CSS Flexible Box Layout。1次元のレイアウトを直感的に組むためのCSS仕様。" },
+            { term: "z-index", category: "HTML/CSS", def: "要素の重なり順を指定するCSSプロパティ。positionがstatic以外（relative, absolute等）で機能する。" },
+            { term: "box-sizing", category: "HTML/CSS", def: "border-boxを指定することで、widthとheightにborderとpaddingを含める計算方式にするCSSプロパティ。" },
+            { term: "補色", category: "カラー・デザイン", def: "色相環で真向かいに位置する対比色の関係。最も強いコントラストを生む。" },
+            { term: "RGB", category: "カラー・デザイン", def: "Red, Green, Blue。ディスプレイ等の発光体で用いられる加法混色の三原色。" },
+            { term: "CMYK", category: "カラー・デザイン", def: "Cyan, Magenta, Yellow, Key tone(Black)。印刷物で用いられる減法混色の表色系。" },
+            { term: "Webセーフカラー", category: "カラー・デザイン", def: "OS環境に左右されず共通して表示される216色の標準カラー。" },
+            { term: "カーニング", category: "カラー・デザイン", def: "文字同士の間隔（アキ）を個別に調整して美しく見せるタイポグラフィ処理。" },
+            { term: "SVG", category: "実技・画像形式", def: "Scalable Vector Graphics。ベクターデータ形式で拡大縮小しても劣化しないWeb用画像規格。" },
+            { term: "PNG", category: "実技・画像形式", def: "可逆圧縮で透過処理（アルファチャンネル）に対応した標準画像フォーマット。" },
+            { term: "JPEG", category: "実技・画像形式", def: "非可逆圧縮写真画像フォーマット。高圧縮だが保存・編集を繰り返すと劣化する。" },
+            { term: "ワイヤーフレーム", category: "実技・制作手法", def: "Web制作の初期段階で画面のレイアウト・要素配置をシンプルに可視化した設計図。" },
+            { term: "ペルソナ", category: "実技・制作手法", def: "Webサイトのターゲットとなる典型的なユーザー像（年齢、職業、行動様式等）を具現化したモデル。" },
+            { term: "サイトマップ", category: "実技・制作手法", def: "Webサイトの全体構造を階層状に整理した構成図。" },
+            { term: "Git", category: "実技・制作手法", def: "プログラムやデザイン構成ファイルの変更履歴を分散管理するバージョン管理システム。" },
+            { term: "SEO", category: "実技・制作手法", def: "Search Engine Optimization。検索エンジンで自社サイトを上位表示させるための最適化技術。" },
+            { term: "メディアクエリ", category: "HTML/CSS", def: "@mediaを用いて画面幅等のデバイス特性に応じたCSSを適用するレスポンシブWebデザイン手法。" },
+            { term: "コントラスト比 4.5:1", category: "アクセシビリティ", def: "JIS X 8341-3 レベルAAで求められる、通常テキストの背景色に対する最小限の明暗差比率。" }
         ];
 
-        // --- アプリケーション状態 ---
-        let appState = {
-            totalAnswered: 0,
-            totalCorrect: 0,
-            bookmarks: [],
-            weakQuestionIds: [],
-            examHighScore: null,
-            flashcardMastered: []
+        // --- アプリ状態管理 ---
+        let userData = {
+            answeredQuestions: {}, // { id: { correct: true/false, count: n } }
+            bookmarks: [],         // [ id, id, ... ]
+            masteredCards: [],     // [ index, index, ... ]
+            examHistory: []        // [ { date, score, total } ]
         };
 
         let currentPracticeSession = {
             questions: [],
             currentIndex: 0,
-            sessionScore: 0,
-            userAnswers: [],
-            isAutoNext: true
+            answers: {}
         };
 
-        let currentExamState = {
+        let currentExamSession = {
             questions: [],
             currentIndex: 0,
-            userAnswers: [],
+            answers: {},
             timerInterval: null,
-            secondsLeft: 45 * 60,
-            isFinished: false
+            timeLeft: 2700
         };
 
-        let currentFlashcardIndex = 0;
-        let activeCardsList = [];
+        let currentCardIndex = 0;
 
-        // Touch handling for flashcard swipe
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        // --- 初期化 ---
-        document.addEventListener("DOMContentLoaded", () => {
+        // --- 初期化処理 ---
+        window.addEventListener('DOMContentLoaded', () => {
             loadUserData();
-            initCategoryCards();
-            updateDashboardStats();
-            initFlashcardSwipe();
+            renderDashboard();
+            updateGlobalStats();
         });
 
         function loadUserData() {
-            const saved = localStorage.getItem("web3_master_pro_data");
+            const saved = localStorage.getItem('web_exam3_data');
             if (saved) {
                 try {
-                    const parsed = JSON.parse(saved);
-                    appState = { ...appState, ...parsed };
-                } catch(e) { console.error("データ読み込み失敗", e); }
+                    userData = { ...userData, ...JSON.parse(saved) };
+                } catch(e) {
+                    console.error("データの読み込みエラー", e);
+                }
             }
-            updateWeakNavBadge();
         }
 
         function saveUserData() {
-            localStorage.setItem("web3_master_pro_data", JSON.stringify(appState));
-            updateDashboardStats();
-            updateWeakNavBadge();
+            localStorage.setItem('web_exam3_data', JSON.stringify(userData));
+            updateGlobalStats();
         }
 
-        function updateWeakNavBadge() {
-            const badge = document.getElementById("weak-nav-badge");
-            if (!badge) return;
-            const count = appState.weakQuestionIds ? appState.weakQuestionIds.length : 0;
-            if (count > 0) {
-                badge.textContent = count;
-                badge.classList.remove("hidden");
-            } else {
-                badge.classList.add("hidden");
-            }
-        }
+        // --- タブ切り替え ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabName}`);
+            if (target) target.classList.remove('hidden');
 
-        function switchTab(tabId) {
-            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-            const target = document.getElementById(`tab-${tabId}`);
-            if (target) target.classList.remove("hidden");
-
-            document.querySelectorAll(".nav-btn").forEach(btn => {
+            // サイドバー・モバイルナビの見た目更新
+            document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.className = "nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
             });
-            const activeNav = document.getElementById(`nav-${tabId}`);
+            const activeNav = document.getElementById(`nav-${tabName}`);
             if (activeNav) {
                 activeNav.className = "nav-btn w-full px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-3 text-blue-400 bg-blue-950/60 border border-blue-800/50";
             }
 
-            document.querySelectorAll(".mobile-nav-btn").forEach(btn => {
-                btn.className = "mobile-nav-btn flex flex-col items-center text-slate-400";
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-400');
+                btn.classList.add('text-slate-400');
             });
-            const activeMobileNav = document.getElementById(`mobile-nav-${tabId}`);
+            const activeMobileNav = document.getElementById(`mobile-nav-${tabName}`);
             if (activeMobileNav) {
-                activeMobileNav.className = "mobile-nav-btn flex flex-col items-center text-blue-400";
+                activeMobileNav.classList.remove('text-slate-400');
+                activeMobileNav.classList.add('text-blue-400');
             }
 
-            if (tabId === "practice" && currentPracticeSession.questions.length === 0) {
-                startPracticeSession("normal");
-            } else if (tabId === "bookmarks") {
-                renderBookmarksList();
-            } else if (tabId === "flashcards") {
-                initFlashcards();
-            } else if (tabId === "weak") {
-                renderWeakSection();
-            }
+            // タブ特有の初期化処理
+            if (tabName === 'dashboard') renderDashboard();
+            if (tabName === 'practice' && currentPracticeSession.questions.length === 0) startPracticeSession('normal');
+            if (tabName === 'bookmarks') renderBookmarks();
+            if (tabName === 'flashcards') renderFlashcard();
+            if (tabName === 'weak') renderWeakTab();
         }
 
-        function updateDashboardStats() {
-            document.getElementById("stat-total-answered").textContent = appState.totalAnswered;
-            const acc = appState.totalAnswered > 0 ? Math.round((appState.totalCorrect / appState.totalAnswered) * 100) : 0;
-            document.getElementById("stat-accuracy").textContent = `${acc}%`;
-            document.getElementById("stat-bookmarks-count").textContent = appState.bookmarks.length;
-            
-            const highEl = document.getElementById("stat-exam-high");
-            if (appState.examHighScore !== null) {
-                highEl.textContent = `${appState.examHighScore} / 25問`;
-            } else {
-                highEl.textContent = "未受験";
-            }
-        }
-
-        function initCategoryCards() {
-            const container = document.getElementById("category-cards");
-            if (!container) return;
-            container.innerHTML = "";
+        // --- ダッシュボード ---
+        function renderDashboard() {
+            const container = document.getElementById('category-cards');
+            container.innerHTML = '';
 
             Object.keys(CATEGORIES).forEach(catKey => {
-                const qList = QUESTIONS.filter(q => q.category === catKey);
-                const card = document.createElement("div");
-                card.className = "bg-slate-900/80 p-4 rounded-xl border border-slate-700/70 hover:border-blue-500/50 transition cursor-pointer flex flex-col justify-between space-y-3";
-                card.onclick = () => {
-                    document.getElementById("practice-category-select").value = catKey;
-                    switchTab("practice");
-                    startPracticeSession("normal");
-                };
+                const catQuestions = QUESTIONS.filter(q => q.category === catKey);
+                let catAnswered = 0;
+                let catCorrect = 0;
+
+                catQuestions.forEach(q => {
+                    const rec = userData.answeredQuestions[q.id];
+                    if (rec) {
+                        catAnswered++;
+                        if (rec.correct) catCorrect++;
+                    }
+                });
+
+                const pct = catAnswered > 0 ? Math.round((catCorrect / catAnswered) * 100) : 0;
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60 hover:border-slate-600 transition flex flex-col justify-between space-y-4";
                 card.innerHTML = `
                     <div>
-                        <span class="text-[10px] font-bold text-blue-400 bg-blue-950 border border-blue-800/50 px-2 py-0.5 rounded-md">全${qList.length}問</span>
-                        <h4 class="font-bold text-slate-200 text-sm mt-1.5">${CATEGORIES[catKey]}</h4>
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-800/40 px-2.5 py-1 rounded-lg">${catQuestions.length}問</span>
+                            <span class="text-xs font-bold text-slate-400">${pct}% 正解</span>
+                        </div>
+                        <h4 class="font-bold text-white text-base mt-2">${CATEGORIES[catKey]}</h4>
                     </div>
-                    <div class="text-right text-xs font-semibold text-blue-400 hover:underline flex items-center justify-end gap-1">
-                        演習を開始 ▶
+                    <div class="space-y-2">
+                        <div class="progress-track">
+                            <div class="progress-fill bg-blue-500" style="width:${pct}%"></div>
+                        </div>
+                        <button onclick="filterCategoryAndPractice('${catKey}')" class="w-full py-2 bg-slate-700/60 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition">この分野を演習</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // --- PRACTICE SESSION (分野別演習) ---
-        function startPracticeSession(mode) {
-            const catSelect = document.getElementById("practice-category-select").value;
-            let targetQs = [];
+        function updateGlobalStats() {
+            let totalAns = 0;
+            let totalCorr = 0;
 
-            if (catSelect === "ALL") {
-                targetQs = [...QUESTIONS];
+            Object.values(userData.answeredQuestions).forEach(rec => {
+                totalAns += rec.count || 1;
+                if (rec.correct) totalCorr += rec.count || 1;
+            });
+
+            document.getElementById('stat-total-answered').innerText = totalAns;
+            document.getElementById('stat-accuracy').innerText = totalAns > 0 ? Math.round((totalCorr / totalAns) * 100) + '%' : '0%';
+
+            let maxExam = "未受験";
+            if (userData.examHistory.length > 0) {
+                const maxScore = Math.max(...userData.examHistory.map(e => e.score));
+                maxExam = `${maxScore} / 25`;
+            }
+            document.getElementById('stat-exam-high').innerText = maxExam;
+            document.getElementById('stat-bookmarks-count').innerText = userData.bookmarks.length;
+
+            const weakIds = Object.keys(userData.answeredQuestions).filter(id => !userData.answeredQuestions[id].correct);
+            const weakBadge = document.getElementById('weak-nav-badge');
+            if (weakIds.length > 0) {
+                weakBadge.innerText = weakIds.length;
+                weakBadge.classList.remove('hidden');
             } else {
-                targetQs = QUESTIONS.filter(q => q.category === catSelect);
+                weakBadge.classList.add('hidden');
+            }
+        }
+
+        function filterCategoryAndPractice(catKey) {
+            document.getElementById('practice-category-select').value = catKey;
+            switchTab('practice');
+            startPracticeSession('normal');
+        }
+
+        // --- 分野別演習 ---
+        function startPracticeSession(mode) {
+            const cat = document.getElementById('practice-category-select').value;
+            let pool = [...QUESTIONS];
+
+            if (cat !== 'ALL') {
+                pool = pool.filter(q => q.category === cat);
             }
 
-            targetQs.sort(() => Math.random() - 0.5);
+            // 配列をシャッフル
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
 
             currentPracticeSession = {
-                questions: targetQs,
+                questions: pool,
                 currentIndex: 0,
-                sessionScore: 0,
-                userAnswers: new Array(targetQs.length).fill(null),
-                isAutoNext: document.getElementById("practice-auto-next-toggle").checked
+                answers: {}
             };
 
-            document.getElementById("practice-mode-label").textContent = "通常演習";
+            document.getElementById('practice-mode-label').innerText = mode === 'weak' ? '苦手集中モード' : '通常演習';
             renderPracticeQuestion();
         }
 
         function renderPracticeQuestion() {
             const session = currentPracticeSession;
-            if (session.questions.length === 0) return;
-
-            const q = session.questions[session.currentIndex];
-            document.getElementById("practice-category-badge").textContent = CATEGORIES[q.category] || "総合";
-            document.getElementById("practice-progress-text").textContent = `問題 ${session.currentIndex + 1} / ${session.questions.length}`;
-            document.getElementById("practice-type-tag").textContent = q.type === "tf" ? "○×判定" : "四肢選択";
-            document.getElementById("practice-question-text").textContent = q.question;
-
-            const bmBtn = document.getElementById("practice-bookmark-btn");
-            if (appState.bookmarks.includes(q.id)) {
-                bmBtn.innerHTML = "★ 保存済み";
-                bmBtn.className = "text-amber-400 transition flex items-center gap-1 text-xs font-bold";
-            } else {
-                bmBtn.innerHTML = "🔖 ブックマーク保存";
-                bmBtn.className = "text-slate-400 hover:text-amber-400 transition flex items-center gap-1 text-xs font-semibold";
+            if (session.questions.length === 0) {
+                document.getElementById('practice-question-text').innerText = "該当する問題がありません。";
+                document.getElementById('practice-options').innerHTML = '';
+                document.getElementById('practice-explanation').classList.add('hidden');
+                return;
             }
 
-            const optionsContainer = document.getElementById("practice-options");
-            optionsContainer.innerHTML = "";
+            const q = session.questions[session.currentIndex];
+            document.getElementById('practice-category-badge').innerText = CATEGORIES[q.category] || "総合";
+            document.getElementById('practice-progress-text').innerText = `問題 ${session.currentIndex + 1} / ${session.questions.length}`;
+            document.getElementById('practice-type-tag').innerText = q.type === 'tf' ? '○×形式' : '四肢択一形式';
+            document.getElementById('practice-question-text').innerText = q.question;
 
-            const existingAns = session.userAnswers[session.currentIndex];
-            const explanationEl = document.getElementById("practice-explanation");
-            explanationEl.className = "hidden rounded-xl p-5 border transition-all";
-            explanationEl.innerHTML = "";
+            // ブックマークボタンの状態
+            const isBookmarked = userData.bookmarks.includes(q.id);
+            const bmBtn = document.getElementById('practice-bookmark-btn');
+            bmBtn.innerHTML = isBookmarked ? '🔖 <span class="text-amber-400 font-bold">ブックマーク済み</span>' : '🔖 ブックマーク保存';
 
-            q.options.forEach((optText, optIdx) => {
-                const btn = document.createElement("button");
-                btn.className = "question-option w-full p-4 rounded-xl text-left border border-slate-700 bg-slate-900/80 hover:bg-slate-700/60 font-medium transition flex items-center justify-between text-sm text-slate-200 shadow-sm";
-                btn.innerHTML = `<span>${optText}</span>`;
+            // 選択肢の表示
+            const optsContainer = document.getElementById('practice-options');
+            optsContainer.innerHTML = '';
+            const answered = session.answers[session.currentIndex] !== undefined;
 
-                if (existingAns !== null) {
-                    btn.disabled = true;
-                    if (optIdx === q.correct) {
-                        btn.className = "question-option w-full p-4 rounded-xl text-left border-2 border-emerald-500 bg-emerald-950/40 text-emerald-200 font-bold transition flex items-center justify-between text-sm shadow-sm";
-                        btn.innerHTML += `<span class="text-emerald-400 text-lg">⭕ 正解</span>`;
-                    } else if (optIdx === existingAns) {
-                        btn.className = "question-option w-full p-4 rounded-xl text-left border-2 border-rose-500 bg-rose-950/40 text-rose-200 font-bold transition flex items-center justify-between text-sm shadow-sm";
-                        btn.innerHTML += `<span class="text-rose-400 text-lg">❌ 不正解</span>`;
-                    }
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "question-option w-full p-4 rounded-xl text-left border font-medium text-sm transition flex items-center justify-between shadow-sm ";
+
+                if (!answered) {
+                    btn.className += "bg-slate-900/60 border-slate-700 hover:bg-slate-700/80 text-slate-200";
+                    btn.onclick = () => handlePracticeAnswer(idx);
                 } else {
-                    btn.onclick = () => checkPracticeAnswer(optIdx);
+                    const userSel = session.answers[session.currentIndex];
+                    if (idx === q.correct) {
+                        btn.className += "bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold";
+                    } else if (idx === userSel) {
+                        btn.className += "bg-rose-950/80 border-rose-500 text-rose-200 font-bold";
+                    } else {
+                        btn.className += "bg-slate-900/30 border-slate-800 text-slate-500 opacity-60";
+                    }
                 }
 
-                optionsContainer.appendChild(btn);
+                btn.innerHTML = `<span>${optText}</span>`;
+                optsContainer.appendChild(btn);
             });
 
-            if (existingAns !== null) {
-                showPracticeExplanation(q, existingAns === q.correct);
-            }
+            // 解説領域の表示
+            const expContainer = document.getElementById('practice-explanation');
+            if (answered) {
+                const userSel = session.answers[session.currentIndex];
+                const isCorrect = userSel === q.correct;
 
-            document.getElementById("practice-prev-btn").disabled = (session.currentIndex === 0);
-
-            // 【問題1修正】最後の問題になったらボタンの表示を「最初に戻る」へ変更
-            const nextBtn = document.getElementById("practice-next-btn");
-            if (session.currentIndex === session.questions.length - 1) {
-                nextBtn.innerHTML = "最初に戻る 🔄";
+                expContainer.className = `rounded-xl p-5 border ${isCorrect ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200' : 'bg-rose-950/40 border-rose-800/60 text-rose-200'}`;
+                expContainer.innerHTML = `
+                    <div class="font-bold text-base mb-2 flex items-center gap-2">
+                        ${isCorrect ? '🎉 正解です！' : '❌ 不正解...'}
+                    </div>
+                    <p class="text-sm text-slate-200 leading-relaxed">${q.explanation}</p>
+                `;
+                expContainer.classList.remove('hidden');
             } else {
-                nextBtn.innerHTML = "次の問題 ▶";
+                expContainer.classList.add('hidden');
             }
+
+            // ボタン表示制御
+            document.getElementById('practice-prev-btn').disabled = session.currentIndex === 0;
+            document.getElementById('practice-prev-btn').style.opacity = session.currentIndex === 0 ? "0.4" : "1";
         }
 
-        function checkPracticeAnswer(selectedIndex) {
+        function handlePracticeAnswer(selectedIdx) {
             const session = currentPracticeSession;
-            if (session.userAnswers[session.currentIndex] !== null) return;
-
             const q = session.questions[session.currentIndex];
-            session.userAnswers[session.currentIndex] = selectedIndex;
 
-            appState.totalAnswered++;
-            const isCorrect = (selectedIndex === q.correct);
-            if (isCorrect) {
-                appState.totalCorrect++;
-                session.sessionScore++;
-                // 苦手問題リストから除外
-                appState.weakQuestionIds = appState.weakQuestionIds.filter(id => id !== q.id);
-            } else {
-                // 苦手問題リストに追加
-                if (!appState.weakQuestionIds.includes(q.id)) {
-                    appState.weakQuestionIds.push(q.id);
-                }
-            }
+            session.answers[session.currentIndex] = selectedIdx;
+            const isCorrect = selectedIdx === q.correct;
+
+            // ユーザーデータの記録
+            const prevRec = userData.answeredQuestions[q.id] || { count: 0 };
+            userData.answeredQuestions[q.id] = {
+                correct: isCorrect,
+                count: prevRec.count + 1
+            };
             saveUserData();
 
-            const calculatedAcc = Math.round((session.sessionScore / (session.currentIndex + 1)) * 100);
-            document.getElementById("practice-session-score").textContent = `正答率: ${calculatedAcc}%`;
-
             renderPracticeQuestion();
 
-            // 自動遷移設定時（問題2修正：スマホで画面が見えるよう表示維持時間を1.2秒に調整）
-            const isAuto = document.getElementById("practice-auto-next-toggle").checked;
-            if (isAuto) {
+            // 自動遷移設定
+            const autoNext = document.getElementById('practice-auto-next-toggle').checked;
+            if (autoNext) {
                 setTimeout(() => {
-                    nextPracticeQuestion();
-                }, 1200);
+                    if (session.currentIndex < session.questions.length - 1) {
+                        nextPracticeQuestion();
+                    }
+                }, 1400);
             }
         }
 
-        function showPracticeExplanation(q, isCorrect) {
-            const explanationEl = document.getElementById("practice-explanation");
-            explanationEl.classList.remove("hidden");
-            if (isCorrect) {
-                explanationEl.className = "rounded-xl p-4 border border-emerald-800/80 bg-emerald-950/30 text-emerald-200 text-xs md:text-sm leading-relaxed";
-                explanationEl.innerHTML = `<div class="font-bold mb-1 text-emerald-400 text-sm">⭕ 正解です！</div>${q.explanation}`;
-            } else {
-                explanationEl.className = "rounded-xl p-4 border border-rose-800/80 bg-rose-950/30 text-rose-200 text-xs md:text-sm leading-relaxed";
-                explanationEl.innerHTML = `<div class="font-bold mb-1 text-rose-400 text-sm">❌ 不正解（正解: ${q.options[q.correct]}）</div>${q.explanation}`;
-            }
-        }
-
-        // 【問題1修正】最後の問題の場合、1からスタート（最初に戻る）するように改修
         function nextPracticeQuestion() {
-            const session = currentPracticeSession;
-            if (session.currentIndex < session.questions.length - 1) {
-                session.currentIndex++;
-            } else {
-                // 最初に戻る
-                session.currentIndex = 0;
+            if (currentPracticeSession.currentIndex < currentPracticeSession.questions.length - 1) {
+                currentPracticeSession.currentIndex++;
+                renderPracticeQuestion();
             }
-            renderPracticeQuestion();
         }
 
         function prevPracticeQuestion() {
-            const session = currentPracticeSession;
-            if (session.currentIndex > 0) {
-                session.currentIndex--;
+            if (currentPracticeSession.currentIndex > 0) {
+                currentPracticeSession.currentIndex--;
                 renderPracticeQuestion();
             }
         }
 
         function toggleBookmarkCurrentPractice() {
-            const session = currentPracticeSession;
-            if (!session.questions || session.questions.length === 0) return;
-            const q = session.questions[session.currentIndex];
+            const q = currentPracticeSession.questions[currentPracticeSession.currentIndex];
+            if (!q) return;
 
-            if (appState.bookmarks.includes(q.id)) {
-                appState.bookmarks = appState.bookmarks.filter(id => id !== q.id);
+            const idx = userData.bookmarks.indexOf(q.id);
+            if (idx >= 0) {
+                userData.bookmarks.splice(idx, 1);
             } else {
-                appState.bookmarks.push(q.id);
+                userData.bookmarks.push(q.id);
             }
             saveUserData();
             renderPracticeQuestion();
         }
 
-        // --- 模擬試験 (EXAM TAB) ---
+        // --- 模擬試験 ---
         function startExam() {
-            const examQs = [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 25);
-            currentExamState = {
-                questions: examQs,
+            // ランダムに25問抽出
+            const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 25);
+
+            currentExamSession = {
+                questions: selected,
                 currentIndex: 0,
-                userAnswers: new Array(25).fill(null),
-                timerInterval: null,
-                secondsLeft: 45 * 60,
-                isFinished: false
+                answers: {},
+                timeLeft: 2700, // 45分
+                timerInterval: setInterval(updateExamTimer, 1000)
             };
 
-            document.getElementById("exam-intro").classList.add("hidden");
-            document.getElementById("exam-result").classList.add("hidden");
-            document.getElementById("exam-active").classList.remove("hidden");
+            document.getElementById('exam-intro').classList.add('hidden');
+            document.getElementById('exam-result').classList.add('hidden');
+            document.getElementById('exam-active').classList.remove('hidden');
 
-            startExamTimer();
             renderExamQuestion();
             renderExamGrid();
         }
 
-        function startExamTimer() {
-            if (currentExamState.timerInterval) clearInterval(currentExamState.timerInterval);
-            currentExamState.timerInterval = setInterval(() => {
-                currentExamState.secondsLeft--;
-                if (currentExamState.secondsLeft <= 0) {
-                    clearInterval(currentExamState.timerInterval);
-                    finishExam();
-                } else {
-                    const m = Math.floor(currentExamState.secondsLeft / 60);
-                    const s = currentExamState.secondsLeft % 60;
-                    document.getElementById("exam-timer").textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                }
-            }, 1000);
+        function updateExamTimer() {
+            currentExamSession.timeLeft--;
+            const mins = Math.floor(currentExamSession.timeLeft / 60);
+            const secs = currentExamSession.timeLeft % 60;
+            document.getElementById('exam-timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            if (currentExamSession.timeLeft <= 0) {
+                clearInterval(currentExamSession.timerInterval);
+                finishExam();
+            }
         }
 
         function renderExamQuestion() {
-            const state = currentExamState;
-            const q = state.questions[state.currentIndex];
+            const session = currentExamSession;
+            const q = session.questions[session.currentIndex];
 
-            document.getElementById("exam-progress-indicator").textContent = `問題 ${state.currentIndex + 1} / 25`;
-            document.getElementById("exam-question-text").textContent = q.question;
+            document.getElementById('exam-progress-indicator').innerText = `問題 ${session.currentIndex + 1} / 25`;
+            document.getElementById('exam-question-text').innerText = q.question;
 
-            const progressBar = document.getElementById("exam-progress-bar");
-            progressBar.style.width = `${((state.currentIndex + 1) / 25) * 100}%`;
+            const progressPct = ((session.currentIndex + 1) / 25) * 100;
+            document.getElementById('exam-progress-bar').style.width = `${progressPct}%`;
 
-            const optionsContainer = document.getElementById("exam-options");
-            optionsContainer.innerHTML = "";
+            const optsContainer = document.getElementById('exam-options');
+            optsContainer.innerHTML = '';
 
-            const currentAns = state.userAnswers[state.currentIndex];
+            const currentAns = session.answers[session.currentIndex];
 
-            q.options.forEach((optText, optIdx) => {
-                const btn = document.createElement("button");
-                const isSelected = (currentAns === optIdx);
-                btn.className = isSelected 
-                    ? "question-option w-full p-4 rounded-xl text-left border-2 border-blue-500 bg-blue-950/60 font-bold transition flex items-center justify-between text-sm text-blue-200"
-                    : "question-option w-full p-4 rounded-xl text-left border border-slate-700 bg-slate-900/80 hover:bg-slate-700/60 font-medium transition flex items-center justify-between text-sm text-slate-200";
-                
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `question-option w-full p-4 rounded-xl text-left border font-medium text-sm transition flex items-center justify-between shadow-sm ${currentAns === idx ? 'bg-blue-600 border-blue-400 text-white font-bold' : 'bg-slate-900/60 border-slate-700 hover:bg-slate-700/80 text-slate-200'}`;
+                btn.onclick = () => {
+                    session.answers[session.currentIndex] = idx;
+                    renderExamQuestion();
+                    renderExamGrid();
+                };
                 btn.innerHTML = `<span>${optText}</span>`;
-                btn.onclick = () => selectExamAnswer(optIdx);
-                optionsContainer.appendChild(btn);
+                optsContainer.appendChild(btn);
             });
 
-            document.getElementById("exam-prev-btn").disabled = (state.currentIndex === 0);
-            const nextBtn = document.getElementById("exam-next-btn");
-            if (state.currentIndex === 24) {
-                nextBtn.textContent = "回答一覧へ ▶";
-            } else {
-                nextBtn.textContent = "次へ ▶";
-            }
+            document.getElementById('exam-prev-btn').disabled = session.currentIndex === 0;
+            document.getElementById('exam-prev-btn').style.opacity = session.currentIndex === 0 ? "0.4" : "1";
 
-            const answeredCount = state.userAnswers.filter(a => a !== null).length;
-            document.getElementById("exam-answered-summary").textContent = `回答済み: ${answeredCount} / 25 問`;
-            renderExamGrid();
+            const answeredCount = Object.keys(session.answers).length;
+            document.getElementById('exam-answered-summary').innerText = `回答済み: ${answeredCount} / 25 問`;
         }
 
-        function selectExamAnswer(index) {
-            currentExamState.userAnswers[currentExamState.currentIndex] = index;
-            renderExamQuestion();
+        function renderExamGrid() {
+            const grid = document.getElementById('exam-question-grid');
+            grid.innerHTML = '';
+
+            currentExamSession.questions.forEach((_, idx) => {
+                const btn = document.createElement('button');
+                const isAns = currentExamSession.answers[idx] !== undefined;
+                const isCur = currentExamSession.currentIndex === idx;
+
+                btn.className = `p-2 rounded-lg text-xs font-bold border transition ${isCur ? 'border-amber-400 ring-2 ring-amber-400/50' : ''} ${isAns ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-400'}`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => {
+                    currentExamSession.currentIndex = idx;
+                    renderExamQuestion();
+                    renderExamGrid();
+                };
+                grid.appendChild(btn);
+            });
         }
 
         function navigateExamQuestion(dir) {
-            const state = currentExamState;
-            const target = state.currentIndex + dir;
-            if (target >= 0 && target < 25) {
-                state.currentIndex = target;
+            const newIdx = currentExamSession.currentIndex + dir;
+            if (newIdx >= 0 && newIdx < 25) {
+                currentExamSession.currentIndex = newIdx;
                 renderExamQuestion();
+                renderExamGrid();
             }
         }
 
         function handleExamNext() {
-            if (currentExamState.currentIndex < 24) {
+            if (currentExamSession.currentIndex < 24) {
                 navigateExamQuestion(1);
             } else {
                 finishExamPrompt();
             }
         }
 
-        function renderExamGrid() {
-            const grid = document.getElementById("exam-question-grid");
-            if (!grid) return;
-            grid.innerHTML = "";
-
-            currentExamState.questions.forEach((_, idx) => {
-                const btn = document.createElement("button");
-                const isAns = (currentExamState.userAnswers[idx] !== null);
-                const isCurr = (currentExamState.currentIndex === idx);
-
-                let cls = "h-9 rounded-lg font-bold text-xs transition flex items-center justify-center ";
-                if (isCurr) {
-                    cls += "ring-2 ring-blue-400 bg-blue-600 text-white";
-                } else if (isAns) {
-                    cls += "bg-slate-700 text-blue-300 border border-blue-500/40";
-                } else {
-                    cls += "bg-slate-900 text-slate-500 border border-slate-800";
-                }
-                btn.className = cls;
-                btn.textContent = idx + 1;
-                btn.onclick = () => {
-                    currentExamState.currentIndex = idx;
-                    renderExamQuestion();
-                };
-                grid.appendChild(btn);
-            });
-        }
-
         function finishExamPrompt() {
-            const answeredCount = currentExamState.userAnswers.filter(a => a !== null).length;
+            const answeredCount = Object.keys(currentExamSession.answers).length;
             if (answeredCount < 25) {
-                if (confirm(`未回答の問題が ${25 - answeredCount} 問あります。このまま採点しますか？`)) {
-                    finishExam();
+                if (!confirm(`未回答の問題が ${25 - answeredCount} 問あります。このまま採点しますか？`)) {
+                    return;
                 }
-            } else {
-                finishExam();
             }
+            clearInterval(currentExamSession.timerInterval);
+            finishExam();
         }
 
         function finishExam() {
-            if (currentExamState.timerInterval) clearInterval(currentExamState.timerInterval);
-            currentExamState.isFinished = true;
+            const session = currentExamSession;
+            let correctCount = 0;
 
-            let score = 0;
-            currentExamState.questions.forEach((q, idx) => {
-                const userAns = currentExamState.userAnswers[idx];
-                appState.totalAnswered++;
-                if (userAns === q.correct) {
-                    score++;
-                    appState.totalCorrect++;
-                    appState.weakQuestionIds = appState.weakQuestionIds.filter(id => id !== q.id);
-                } else {
-                    if (!appState.weakQuestionIds.includes(q.id)) {
-                        appState.weakQuestionIds.push(q.id);
-                    }
+            session.questions.forEach((q, idx) => {
+                const userSel = session.answers[idx];
+                if (userSel === q.correct) {
+                    correctCount++;
                 }
+                // 成績の永続記録
+                userData.answeredQuestions[q.id] = {
+                    correct: userSel === q.correct,
+                    count: (userData.answeredQuestions[q.id]?.count || 0) + 1
+                };
             });
 
-            if (appState.examHighScore === null || score > appState.examHighScore) {
-                appState.examHighScore = score;
-            }
+            const pct = Math.round((correctCount / 25) * 100);
+            const isPassed = correctCount >= 18; // 70%以上
+
+            userData.examHistory.push({
+                date: new Date().toLocaleDateString(),
+                score: correctCount,
+                total: 25
+            });
             saveUserData();
 
-            document.getElementById("exam-active").classList.add("hidden");
-            const resultEl = document.getElementById("exam-result");
-            resultEl.classList.remove("hidden");
+            document.getElementById('exam-active').classList.add('hidden');
+            document.getElementById('exam-result').classList.remove('hidden');
 
-            const isPassed = (score >= 18); // 70%以上で合格
-            const acc = Math.round((score / 25) * 100);
+            document.getElementById('exam-score-text').innerText = `${correctCount} / 25`;
+            document.getElementById('exam-accuracy-text').innerText = `${pct}%`;
 
-            document.getElementById("exam-status-title").textContent = isPassed ? "🎉 合格ライン達成！" : "💪 あと少し！不合格";
-            document.getElementById("exam-status-title").className = isPassed ? "text-2xl font-black text-emerald-400" : "text-2xl font-black text-rose-400";
-            document.getElementById("exam-score-text").textContent = `${score} / 25`;
-            document.getElementById("exam-accuracy-text").textContent = `${acc}%`;
+            const statusTitle = document.getElementById('exam-status-title');
+            const statusSubtitle = document.getElementById('exam-status-subtitle');
+            const badge = document.getElementById('exam-badge');
 
-            renderExamReviewList();
+            if (isPassed) {
+                statusTitle.innerText = "合格！🎉";
+                statusTitle.className = "text-2xl font-black text-emerald-400";
+                statusSubtitle.innerText = "合格ライン（18問以上）をクリアしました！";
+                badge.innerText = "合格";
+                badge.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto text-xl font-bold bg-emerald-950 border border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-500/20";
+            } else {
+                statusTitle.innerText = "不合格";
+                statusTitle.className = "text-2xl font-black text-rose-400";
+                statusSubtitle.innerText = "合格ライン（18問以上）まであと少しです！";
+                badge.innerText = "不合格";
+                badge.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto text-xl font-bold bg-rose-950 border border-rose-500 text-rose-300 shadow-lg shadow-rose-500/20";
+            }
+
+            // レビューリスト生成
+            const reviewList = document.getElementById('exam-review-list');
+            reviewList.innerHTML = '';
+
+            session.questions.forEach((q, idx) => {
+                const userSel = session.answers[idx];
+                const isCorr = userSel === q.correct;
+
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-xl border ${isCorr ? 'bg-slate-900/60 border-slate-700' : 'bg-rose-950/20 border-rose-900/60'}`;
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-xs font-bold mb-2">
+                        <span class="${isCorr ? 'text-emerald-400' : 'text-rose-400'}">${isCorr ? '✓ 正解' : '✕ 不正解'} (問題 ${idx + 1})</span>
+                        <span class="text-slate-400">${CATEGORIES[q.category]}</span>
+                    </div>
+                    <p class="font-bold text-slate-100 text-sm mb-3">${q.question}</p>
+                    <div class="text-xs space-y-1 text-slate-300 bg-slate-950/50 p-3 rounded-lg border border-slate-800">
+                        <div>あなたの回答: <span class="font-bold ${isCorr ? 'text-emerald-400' : 'text-rose-400'}">${userSel !== undefined ? q.options[userSel] : '未回答'}</span></div>
+                        <div>正解: <span class="font-bold text-emerald-400">${q.options[q.correct]}</span></div>
+                        <p class="text-slate-400 mt-2 border-t border-slate-800 pt-2">${q.explanation}</p>
+                    </div>
+                `;
+                reviewList.appendChild(item);
+            });
         }
 
-        function renderExamReviewList() {
-            const container = document.getElementById("exam-review-list");
-            container.innerHTML = "";
+        // --- ブックマーク ---
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarks-list-container');
+            container.innerHTML = '';
 
-            currentExamState.questions.forEach((q, idx) => {
-                const userAns = currentExamState.userAnswers[idx];
-                const isCorrect = (userAns === q.correct);
+            const bookmarkedQuestions = QUESTIONS.filter(q => userData.bookmarks.includes(q.id));
+            document.getElementById('bookmark-badge-count').innerText = `${bookmarkedQuestions.length} 件`;
 
-                const item = document.createElement("div");
-                item.className = "p-5 rounded-2xl bg-slate-900 border border-slate-700/80 space-y-3";
+            if (bookmarkedQuestions.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-500 text-sm">ブックマークされた問題はありません。</div>`;
+                return;
+            }
+
+            bookmarkedQuestions.forEach(q => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3";
                 item.innerHTML = `
-                    <div class="flex items-center justify-between text-xs font-bold">
-                        <span class="text-slate-400">問題 ${idx + 1} (${CATEGORIES[q.category]})</span>
-                        <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${isCorrect ? '⭕ 正解' : '❌ 不正解'}</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-blue-400 bg-blue-950 border border-blue-800/60 px-2.5 py-1 rounded-lg">${CATEGORIES[q.category]}</span>
+                        <button onclick="removeBookmark(${q.id})" class="text-xs text-rose-400 hover:text-rose-300 font-semibold">削除</button>
                     </div>
-                    <p class="font-bold text-slate-100 text-sm leading-relaxed">${q.question}</p>
-                    <div class="text-xs space-y-1">
-                        <div class="text-slate-300">あなたの回答: <span class="font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${userAns !== null ? q.options[userAns] : '未回答'}</span></div>
-                        ${!isCorrect ? `<div class="text-emerald-400">正解: <span class="font-bold">${q.options[q.correct]}</span></div>` : ''}
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300 leading-relaxed">
-                        <span class="font-bold text-blue-400">解説: </span>${q.explanation}
+                    <p class="font-bold text-slate-100 text-base">${q.question}</p>
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1">
+                        <div><strong class="text-emerald-400">正解:</strong> ${q.options[q.correct]}</div>
+                        <div class="text-slate-400 mt-1">${q.explanation}</div>
                     </div>
                 `;
                 container.appendChild(item);
             });
         }
 
-        // --- BOOKMARKS TAB ---
-        function renderBookmarksList() {
-            const container = document.getElementById("bookmarks-list-container");
-            document.getElementById("bookmark-badge-count").textContent = `${appState.bookmarks.length} 件`;
+        function removeBookmark(id) {
+            const idx = userData.bookmarks.indexOf(id);
+            if (idx >= 0) {
+                userData.bookmarks.splice(idx, 1);
+                saveUserData();
+                renderBookmarks();
+            }
+        }
 
-            if (appState.bookmarks.length === 0) {
-                container.innerHTML = `
-                    <div class="p-8 text-center text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-700/50">
-                        ブックマークされた問題はありません。問題演習中に保存できます。
-                    </div>
-                `;
+        // --- 単語帳 (FLASHCARDS) ---
+        function renderFlashcard() {
+            const activeCards = FLASHCARDS_DATA.filter((_, idx) => !userData.masteredCards.includes(idx));
+            const total = FLASHCARDS_DATA.length;
+            const remaining = activeCards.length;
+
+            document.getElementById('flashcard-counter').innerText = `${remaining} / ${total}`;
+
+            if (remaining === 0) {
+                document.getElementById('card-term').innerText = "すべて暗記済みです！🎉";
+                document.getElementById('card-tag').innerText = "完了";
+                document.getElementById('card-definition').innerText = "リセットボタンからいつでも復習できます。";
                 return;
             }
 
-            container.innerHTML = "";
-            appState.bookmarks.forEach(id => {
-                const q = QUESTIONS.find(item => item.id === id);
-                if (!q) return;
+            if (currentCardIndex >= activeCards.length) currentCardIndex = 0;
+            const card = activeCards[currentCardIndex];
 
-                const card = document.createElement("div");
-                card.className = "bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3";
-                card.innerHTML = `
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="px-2.5 py-1 bg-blue-950 text-blue-300 border border-blue-800/50 rounded-lg font-bold">${CATEGORIES[q.category]}</span>
-                        <button onclick="removeBookmark(${q.id})" class="text-rose-400 hover:underline font-semibold">削除</button>
-                    </div>
-                    <h4 class="font-bold text-slate-100 text-sm leading-relaxed">${q.question}</h4>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-700/60 text-xs text-slate-300 leading-relaxed">
-                        <span class="font-bold text-emerald-400">正解: ${q.options[q.correct]}</span><br>
-                        <span class="text-slate-400">${q.explanation}</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+            document.getElementById('card-term').innerText = card.term;
+            document.getElementById('card-tag').innerText = card.category;
+            document.getElementById('card-definition').innerText = card.def;
 
-        function removeBookmark(id) {
-            appState.bookmarks = appState.bookmarks.filter(bId => bId !== id);
-            saveUserData();
-            renderBookmarksList();
-        }
-
-        // --- FLASHCARDS (単語帳 & スワイプ処理) ---
-        function initFlashcards() {
-            activeCardsList = FLASHCARDS_DATA.filter((_, idx) => !appState.flashcardMastered.includes(idx));
-            if (activeCardsList.length === 0) {
-                activeCardsList = [...FLASHCARDS_DATA];
-            }
-            currentFlashcardIndex = 0;
-            renderFlashcard();
-        }
-
-        function renderFlashcard() {
-            const cardEl = document.getElementById("flashcard");
-            if (!cardEl) return;
-            cardEl.classList.remove("rotate-y-180");
-
-            if (activeCardsList.length === 0) return;
-            const data = activeCardsList[currentFlashcardIndex];
-
-            document.getElementById("card-tag").textContent = data.category;
-            document.getElementById("card-term").textContent = data.term;
-            document.getElementById("card-definition").textContent = data.def;
-            document.getElementById("flashcard-counter").textContent = `${currentFlashcardIndex + 1} / ${activeCardsList.length}`;
+            // フリップリセット
+            document.getElementById('flashcard').classList.remove('rotate-y-180');
         }
 
         function handleFlashcardClick(e) {
-            // スワイプによる誤発火を防ぐフラグ等の簡易制御
-            const cardEl = document.getElementById("flashcard");
-            cardEl.classList.toggle("rotate-y-180");
+            const card = document.getElementById('flashcard');
+            card.classList.toggle('rotate-y-180');
         }
 
         function nextCard() {
-            if (activeCardsList.length === 0) return;
-            currentFlashcardIndex = (currentFlashcardIndex + 1) % activeCardsList.length;
-            renderFlashcard();
+            const activeCards = FLASHCARDS_DATA.filter((_, idx) => !userData.masteredCards.includes(idx));
+            if (activeCards.length > 0) {
+                currentCardIndex = (currentCardIndex + 1) % activeCards.length;
+                renderFlashcard();
+            }
         }
 
         function prevCard() {
-            if (activeCardsList.length === 0) return;
-            currentFlashcardIndex = (currentFlashcardIndex - 1 + activeCardsList.length) % activeCardsList.length;
-            renderFlashcard();
+            const activeCards = FLASHCARDS_DATA.filter((_, idx) => !userData.masteredCards.includes(idx));
+            if (activeCards.length > 0) {
+                currentCardIndex = (currentCardIndex - 1 + activeCards.length) % activeCards.length;
+                renderFlashcard();
+            }
         }
 
         function toggleCardMastered() {
-            const data = activeCardsList[currentFlashcardIndex];
-            const origIdx = FLASHCARDS_DATA.findIndex(item => item.term === data.term);
+            const activeCards = FLASHCARDS_DATA.filter((_, idx) => !userData.masteredCards.includes(idx));
+            if (activeCards.length === 0) return;
 
-            if (origIdx !== -1 && !appState.flashcardMastered.includes(origIdx)) {
-                appState.flashcardMastered.push(origIdx);
+            const currentCard = activeCards[currentCardIndex];
+            const originalIdx = FLASHCARDS_DATA.findIndex(c => c.term === currentCard.term);
+
+            if (originalIdx >= 0 && !userData.masteredCards.includes(originalIdx)) {
+                userData.masteredCards.push(originalIdx);
                 saveUserData();
+                renderFlashcard();
             }
-            initFlashcards();
         }
 
         function resetMasteredCards() {
-            appState.flashcardMastered = [];
+            userData.masteredCards = [];
+            currentCardIndex = 0;
             saveUserData();
-            initFlashcards();
+            renderFlashcard();
         }
 
-        // 【問題3修正】単語帳の左右スワイプ操作の実装
-        function initFlashcardSwipe() {
-            const container = document.getElementById("flashcard-container");
-            if (!container) return;
+        // --- 苦手問題 (WEAK TAB) ---
+        function renderWeakTab() {
+            const weakIds = Object.keys(userData.answeredQuestions).filter(id => !userData.answeredQuestions[id].correct).map(Number);
+            const weakQuestions = QUESTIONS.filter(q => weakIds.includes(q.id));
 
-            container.addEventListener("touchstart", (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
+            document.getElementById('weak-total-count').innerText = weakQuestions.length;
 
-            container.addEventListener("touchend", (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipeGesture();
-            }, { passive: true });
-        }
+            const categoriesSet = new Set(weakQuestions.map(q => q.category));
+            document.getElementById('weak-category-count').innerText = categoriesSet.size;
 
-        function handleSwipeGesture() {
-            const swipeThreshold = 50; // 50px以上でスワイプと判定
-            if (touchEndX < touchStartX - swipeThreshold) {
-                // 左スワイプ -> 次のカード
-                nextCard();
-            } else if (touchEndX > touchStartX + swipeThreshold) {
-                // 右スワイプ -> 前のカード
-                prevCard();
-            }
-        }
+            const summaryContainer = document.getElementById('weak-category-summary');
+            summaryContainer.innerHTML = '';
 
-        // --- WEAK SECTION (苦手対策) ---
-        function renderWeakSection() {
-            const totalEl = document.getElementById("weak-total-count");
-            const catEl = document.getElementById("weak-category-count");
-            const listEl = document.getElementById("weak-list");
-
-            const weakQs = QUESTIONS.filter(q => appState.weakQuestionIds.includes(q.id));
-            totalEl.textContent = weakQs.length;
-
-            const cats = new Set(weakQs.map(q => q.category));
-            catEl.textContent = cats.size;
-
-            if (weakQs.length === 0) {
-                listEl.innerHTML = `
-                    <div class="p-8 text-center text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-700/50">
-                        現在、苦手問題はありません！演習で間違えた問題が自動記録されます。
-                    </div>
+            categoriesSet.forEach(catKey => {
+                const count = weakQuestions.filter(q => q.category === catKey).length;
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between text-xs";
+                row.innerHTML = `
+                    <span class="text-slate-300 font-medium">${CATEGORIES[catKey]}</span>
+                    <span class="font-bold text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 rounded-lg">${count}問</span>
                 `;
-                return;
-            }
+                summaryContainer.appendChild(row);
+            });
 
-            listEl.innerHTML = "";
-            weakQs.forEach(q => {
-                const item = document.createElement("div");
-                item.className = "bg-slate-800 p-5 rounded-2xl border border-rose-900/40 space-y-3";
+            const listContainer = document.getElementById('weak-list');
+            listContainer.innerHTML = '';
+
+            weakQuestions.forEach(q => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-2";
                 item.innerHTML = `
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800/50 rounded-lg font-bold">${CATEGORIES[q.category]}</span>
-                        <span class="text-rose-400 font-semibold">要復習</span>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-rose-400 bg-rose-950 border border-rose-800 px-2.5 py-0.5 rounded-lg">${CATEGORIES[q.category]}</span>
                     </div>
-                    <h4 class="font-bold text-slate-100 text-sm leading-relaxed">${q.question}</h4>
-                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-700/60 text-xs text-slate-300 leading-relaxed">
-                        <span class="font-bold text-emerald-400">正解: ${q.options[q.correct]}</span><br>
-                        <span class="text-slate-400">${q.explanation}</span>
-                    </div>
+                    <p class="font-bold text-slate-100 text-sm">${q.question}</p>
+                    <p class="text-xs text-slate-400 bg-slate-950/50 p-3 rounded-xl border border-slate-800">${q.explanation}</p>
                 `;
-                listEl.appendChild(item);
+                listContainer.appendChild(item);
             });
         }
 
         function startWeakPractice() {
-            const weakQs = QUESTIONS.filter(q => appState.weakQuestionIds.includes(q.id));
-            if (weakQs.length === 0) {
-                alert("現在復習対象の苦手問題がありません。");
+            const weakIds = Object.keys(userData.answeredQuestions).filter(id => !userData.answeredQuestions[id].correct).map(Number);
+            const weakQuestions = QUESTIONS.filter(q => weakIds.includes(q.id));
+
+            if (weakQuestions.length === 0) {
+                alert("現在、苦手問題として登録された問題はありません。");
                 return;
             }
 
-            weakQs.sort(() => Math.random() - 0.5);
             currentPracticeSession = {
-                questions: weakQs,
+                questions: weakQuestions,
                 currentIndex: 0,
-                sessionScore: 0,
-                userAnswers: new Array(weakQs.length).fill(null),
-                isAutoNext: document.getElementById("practice-auto-next-toggle").checked
+                answers: {}
             };
 
-            switchTab("practice");
-            document.getElementById("practice-mode-label").textContent = "苦手特訓モード";
+            switchTab('practice');
+            document.getElementById('practice-mode-label').innerText = '苦手集中モード';
             renderPracticeQuestion();
         }
 
-        // --- DATA MANAGEMENT ---
+        // --- 設定・バックアップ ---
         function exportUserData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `web3_learning_data_${new Date().toISOString().slice(0,10)}.json`);
+            downloadAnchor.setAttribute("download", `web3_exam_backup_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
         function importUserData(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function (event) {
                 try {
-                    const imported = JSON.parse(event.target.result);
-                    appState = { ...appState, ...imported };
+                    const parsed = JSON.parse(event.target.result);
+                    userData = { ...userData, ...parsed };
                     saveUserData();
                     alert("データを正常に復元しました。");
                     location.reload();
-                } catch(err) {
-                    alert("データ復元に失敗しました。ファイル形式を確認してください。");
+                } catch (err) {
+                    alert("有効なバックアップファイルではありません。");
                 }
             };
-            reader.readAsText(file);
+            fileReader.readAsText(e.target.files[0]);
         }
 
         function resetUserData() {
-            if (confirm("すべての学習履歴、ブックマーク、苦手データを完全リセットしますか？この操作は取り消せません。")) {
-                localStorage.removeItem("web3_master_pro_data");
+            if (confirm("すべての学習履歴、ブックマーク、単語帳の記憶状態をリセットします。宜しいですか？")) {
+                localStorage.removeItem('web_exam3_data');
                 location.reload();
             }
         }
